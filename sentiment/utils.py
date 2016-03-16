@@ -1,26 +1,58 @@
 import pickle
+import os.path
+import json
 
 
-def save_classifier(classifier, name):
+def save_classifier(name, classifier, feats_name):
     '''
     save the given classifier by name
     '''
-    if not name.endswith('.pickle'):
-        name = name + '.pickle'
+    if os.path.isfile('config.json') is True:
+        with open('config.json', 'r') as f:
+            try:
+                config = json.load(f)
+            except:
+                config = {}
+    else:
+        config = {}
 
-    f = open(name, 'wb')
-    pickle.dump(classifier, f)
-    f.close()
+    config[name] = {}
+    config[name]['classifier_path'] = name + '.pickle'
+    config[name]['feats_name'] = feats_name
 
-    print('Saved classifier to {0}'.format(name))
+    with open('config.json', 'w') as f:
+        print(json.dumps(config, indent=4), file=f)
+
+    name = name + '.pickle'
+    with open(name, 'wb') as f:
+        pickle.dump(classifier, f)
+        print('Saved classifier to {0}'.format(name))
 
 
-def load_classifier(file_path):
+def load_classifier(name):
     '''
     load the classifier by file path
     '''
-    f = open(file_path, 'rb')
-    classifier = pickle.load(f)
-    f.close()
+    if os.path.isfile('config.json') is True:
+        with open('config.json', 'r') as f:
+            try:
+                config = json.load(f)
+            except:
+                print('Check config.json')
+                raise
+    else:
+        raise FileNotFoundError('config.json')
 
-    return classifier
+    with open(config[name]['classifier_path'], 'rb') as f:
+        return (pickle.load(f), feats[config[name]['feats_name']])
+
+
+def word_feats(words):
+    '''
+    create dictionary of features, all words are True for now
+    '''
+    return dict([(word, True) for word in words])
+
+feats = {
+    'word_feats': word_feats
+}

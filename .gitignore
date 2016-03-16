@@ -51,3 +51,5 @@ coverage.xml
 
 # Pickle files
 *.pickle
+
+sentiment/config.json

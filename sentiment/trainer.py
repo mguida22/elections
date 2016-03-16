@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import random
 import nltk.classify.util
 from nltk.classify import NaiveBayesClassifier
@@ -8,17 +6,13 @@ from nltk.corpus import movie_reviews
 import utils
 
 
-def word_feats(words):
-    '''
-    create dictionary of features, all words are True for now
-    '''
-    return dict([(word, True) for word in words])
-
-
-def train_classifier(dataset, feat_f):
+def train_classifier(dataset, feats_name):
     '''
     trains a classifier with given dataset and feature function
     '''
+    # grab feats function
+    feat_f = utils.feats[feats_name]
+
     # get pos and neg ids from dataset
     negids = dataset.fileids('neg')
     posids = dataset.fileids('pos')
@@ -78,6 +72,7 @@ def pick_classifier(classifiers, runs=1):
                 best['accuracy'] = curr_accuracy
                 best['classifier'] = curr_classifier
                 best['name'] = name
+                best['feats_name'] = classifiers[name][1]
 
     # save the best classifier by name
     print('Best classifier was \'{0}\' with an accuracy of {1}'.format(
@@ -86,11 +81,12 @@ def pick_classifier(classifiers, runs=1):
     return best
 
 # specifiy dataset/feature functions here. There can be any combination of these
-# format 'name': (dataset, feature_function)
+# format 'name': (dataset, feature_function, feature_function_name)
 potential_classifiers = {
-    'movie': (movie_reviews, word_feats)
+    'movie': (movie_reviews, 'word_feats')
 }
 
-classifier = pick_classifier(potential_classifiers, 5)
+classifier = pick_classifier(potential_classifiers, 1)
 
-utils.save_classifier(classifier['classifier'], classifier['name'])
+utils.save_classifier(classifier['name'], classifier[
+                      'classifier'], classifier['feats_name'])
