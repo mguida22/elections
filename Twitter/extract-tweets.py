@@ -23,7 +23,7 @@ class TweetExtractor(tweepy.StreamListener):
         self.Tweets = pymongo.MongoClient().tweets
 
     def on_status(self, status):
-        print status.text, "\n"
+        # print status.text, "\n"
 
         data = {}
 
