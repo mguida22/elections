@@ -7,23 +7,25 @@ from Config_Utils.config import config
 CONSUMER_KEY = config.get_environment_variable('TWITTER_CONSUMER_KEY')
 CONSUMER_SECRET = config.get_environment_variable('TWITTER_CONSUMER_SECRET')
 ACCESS_TOKEN_KEY = config.get_environment_variable('TWITTER_ACCESS_TOKEN_KEY')
-ACCESS_TOKEN_SECRET = config.get_environment_variable('TWITTER_ACCESS_TOKEN_SECRET')
+ACCESS_TOKEN_SECRET = config.get_environment_variable(
+    'TWITTER_ACCESS_TOKEN_SECRET')
 
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_TOKEN_KEY, ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
 
+
 class TweetExtractor(tweepy.StreamListener):
-    
+
     def __init__(self, api):
         self.api = api
         super(tweepy.StreamListener, self).__init__()
         self.Tweets = pymongo.MongoClient().tweets
 
     def on_status(self, status):
-        print status.text , "\n"
+        print status.text, "\n"
 
-        data ={}
+        data = {}
 
         data['location'] = status.user.location
         data['text'] = status.text
@@ -31,7 +33,7 @@ class TweetExtractor(tweepy.StreamListener):
         data['geo'] = status.geo
         self.save_tweets_to_db(data)
 
-    def save_tweets_to_db(self,data):
+    def save_tweets_to_db(self, data):
         self.Tweets.tweets.insert(data)
 
     # handle errors without closing stream:
@@ -45,6 +47,9 @@ class TweetExtractor(tweepy.StreamListener):
 
 try:
     sapi = tweepy.streaming.Stream(auth, TweetExtractor(api))
-    sapi.filter(track=['donaldtrump','tedcruz','berniesanders','marcorubio','hillaryclintion','johnkasich'])
+    sapi.filter(track=['donaldtrump', 'donald trump', 'tedcruz', 'ted cruz',
+                       'marcorubio', 'marco rubio', 'berniesanders',
+                       'bernie sanders', 'hillaryclintion', 'hillary clintion',
+                       'johnkasich', 'john kasich'])
 except IncompleteRead:
     pass
