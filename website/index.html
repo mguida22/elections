@@ -3,32 +3,41 @@
 <head>
   <meta charset="utf-8">
   <title>Elections</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    svg {
-      font: 10px sans-serif;
-    }
-    .line-pos {
-      fill: none;
-      stroke: #76ad44;
-      stroke-width: 1.5px;
-    }
-    .line-neg {
-      fill: none;
-      stroke: #ff0000;
-      stroke-width: 1.5px;
-    }
-    .axis path,
-    .axis line {
-      fill: none;
-      stroke: #000;
-      shape-rendering: crispEdges;
-    }
-  </style>
+  <link rel="stylesheet" href="normalize.css">
+  <link rel="stylesheet" href="skeleton.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <script src="//d3js.org/d3.v3.min.js"></script>
-  <div class="graph"></div>
+
+  <div class="container">
+    <h1>2016 Presidential Candidates</h1>
+
+    <div class="row">
+      <div class="six columns">
+        <h4>Hillary Clinton</h4>
+        <div id="clinton-graph" class="graph"></div>
+      </div>
+      <div class="six columns">
+        <h4>Donald Trump</h4>
+        <div id="trump-graph"></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="six columns">
+        <h4>Bernie Sanders</h4>
+        <div id="sanders-graph"></div>
+      </div>
+      <div class="six columns">
+        <h4>Ted Cruz</h4>
+        <div id="cruz-graph"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- <div class="graph"></div> -->
   <script src="index.js"></script>
 </body>
 </html>
