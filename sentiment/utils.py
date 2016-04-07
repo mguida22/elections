@@ -64,9 +64,10 @@ def load_classifier(name):
 
 def word_feats(words):
     '''
-    create dictionary of features, all words are True for now
+    create dictionary of features
     '''
     d = {}
+    words = words.split(' ')
     for word in words:
         word = word.lower()
         if word not in STOPWORDS:
