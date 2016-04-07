@@ -57,3 +57,12 @@ A tmux session named collect_twitter_data has been created. It will be running i
 Then you can use it as an usual ubuntu terminal. 
 
 For more info on tmux - https://robots.thoughtbot.com/a-tmux-crash-course
+
+## Real-time analytics using streamparse
+
+[Streamparse](https://github.com/Parsely/streamparse) lets you run Python code against real-time streams of data via Apache Storm. With streamparse you can create Storm bolts and spouts in Python without having to write a single line of Java. It also provides handy CLI utilities for managing Storm clusters and projects.
+
+###Quickstart with streamparse
+With no need for any coding in Java, streamparse lets you [get started](http://streamparse.readthedocs.org/en/stable/quickstart.html) right away with a basic wordcount topology.
+
+**Important:** The version of `lein` installed should be `2.x`. If not, upgrade it by following [this](https://github.com/technomancy/leiningen/wiki/Upgrading).
