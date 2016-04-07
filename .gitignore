@@ -53,3 +53,4 @@ coverage.xml
 *.pickle
 
 sentiment/config.json
+*.csv
