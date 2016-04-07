@@ -75,7 +75,7 @@ def pick_classifier(classifiers, runs=1):
                 best['accuracy'] = curr_accuracy
                 best['classifier'] = curr_classifier
                 best['name'] = name
-                best['feats_name'] = classifiers[name][1]
+                best['feats_name'] = classifiers[name]
 
     # save the best classifier by name
     print('Best classifier was \'{0}\' with an accuracy of {1}'.format(
@@ -86,7 +86,7 @@ def pick_classifier(classifiers, runs=1):
 # specifiy dataset/feature functions here. There can be any combination of these
 # format 'name': (dataset, feature_function, feature_function_name)
 potential_classifiers = {
-    'movie': 'word_feats'
+    'default_classifier': 'word_feats'
 }
 
 classifier = pick_classifier(potential_classifiers, 1)

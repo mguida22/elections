@@ -17,10 +17,10 @@ with open(INFILE, newline='', encoding='utf8', errors='replace') as f:
     reader = csv.reader(f, delimiter=',')
     try:
         for row in reader:
-            if row[0] == '0':# and negCount < 100000:
+            if row[0] == '0' and negCount < LIMIT:
                 negCount += 1
                 outfile.write("\"{0}\",\"{1}\"\n".format(row[0], row[5]))
-            elif row[0] == '4':# and posCount < 100000:
+            elif row[0] == '4' and posCount < LIMIT:
                 posCount += 1
                 outfile.write("\"{0}\",\"{1}\"\n".format(row[0], row[5]))
     except UnicodeDecodeError as err:
