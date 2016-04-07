@@ -1,25 +1,29 @@
+import csv
 import random
 import nltk.classify.util
 from nltk.classify import NaiveBayesClassifier
-from nltk.corpus import movie_reviews
 
 import utils
 
 
-def train_classifier(dataset, feats_name):
+def train_classifier(feats_name):
     '''
     trains a classifier with given dataset and feature function
     '''
     # grab feats function
     feat_f = utils.feats[feats_name]
 
-    # get pos and neg ids from dataset
-    negids = dataset.fileids('neg')
-    posids = dataset.fileids('pos')
+    # load up training data
+    negfeats = []
+    posfeats = []
+    with open('trimmed.csv', newline='', encoding='utf8', errors='replace') as f:
+        reader = csv.reader(f, delimiter=',')
 
-    # build features
-    negfeats = [(feat_f(dataset.words(fileids=[f])), 'neg') for f in negids]
-    posfeats = [(feat_f(dataset.words(fileids=[f])), 'pos') for f in posids]
+        for row in reader:
+            if (row[0] == '0'):
+                negfeats.append((feat_f(row[1]), 'neg'))
+            elif (row[0] == '4'):
+                posfeats.append((feat_f(row[1]), 'pos'))
 
     # shuffle the data
     random.shuffle(negfeats)
@@ -62,8 +66,7 @@ def pick_classifier(classifiers, runs=1):
             print('Training and testing \'{0}\' classifier. Run {1} of {2}'.format(
                 name, i + 1, runs))
             # train the classifier with dataset and feature function
-            curr_classifier, curr_accuracy = train_classifier(
-                classifiers[name][0], classifiers[name][1])
+            curr_classifier, curr_accuracy = train_classifier(classifiers[name])
 
             print('Accuracy: {0}\n'.format(curr_accuracy))
 
@@ -72,7 +75,7 @@ def pick_classifier(classifiers, runs=1):
                 best['accuracy'] = curr_accuracy
                 best['classifier'] = curr_classifier
                 best['name'] = name
-                best['feats_name'] = classifiers[name][1]
+                best['feats_name'] = classifiers[name]
 
     # save the best classifier by name
     print('Best classifier was \'{0}\' with an accuracy of {1}'.format(
@@ -83,7 +86,7 @@ def pick_classifier(classifiers, runs=1):
 # specifiy dataset/feature functions here. There can be any combination of these
 # format 'name': (dataset, feature_function, feature_function_name)
 potential_classifiers = {
-    'movie': (movie_reviews, 'word_feats')
+    'default_classifier': 'word_feats'
 }
 
 classifier = pick_classifier(potential_classifiers, 1)

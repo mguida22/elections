@@ -11,4 +11,5 @@ class Analyzer:
         self.classifier, self.feats = utils.load_classifier(classifier)
 
     def classify(self, s):
-        return self.classifier.classify(self.feats, s)
+        tokenized = self.feats(s)
+        return self.classifier.classify(tokenized)
