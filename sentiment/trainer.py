@@ -1,5 +1,6 @@
 import csv
 import random
+import sys
 import nltk.classify.util
 from nltk.classify import NaiveBayesClassifier
 
@@ -89,7 +90,11 @@ potential_classifiers = {
     'default_classifier': 'word_feats'
 }
 
-classifier = pick_classifier(potential_classifiers, 1)
+runs = 1
+if len(sys.argv) == 2:
+    runs = int(sys.argv[1])
+
+classifier = pick_classifier(potential_classifiers, runs)
 
 utils.save_classifier(classifier['name'], classifier[
                       'classifier'], classifier['feats_name'])
