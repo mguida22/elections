@@ -1,7 +1,7 @@
 # _*_ coding:utf-8 _*_
 import tweepy
 import sys
-import pymongo
+import  pymongo
 from httplib import IncompleteRead
 from Config_Utils.config import config
 from pykafka import KafkaClient

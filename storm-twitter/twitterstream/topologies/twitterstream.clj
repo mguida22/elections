@@ -9,17 +9,27 @@
           options
           "spouts.readtweets.TweetSpout"
           ["tweet"]
-          :p 2
+          :p 1
           )
     }
 
     ;; bolt configuration
-    {"count-bolt" (python-bolt-spec
+   
+    {"storeDB-bolt" (python-bolt-spec
+          options
+          {"word-spout" :shuffle}
+          "bolts.saveDB.DatabaseBolt"
+          ["tweet"]
+          :p 1
+          )
+    
+
+    "count-bolt" (python-bolt-spec
           options
           {"word-spout" :shuffle}
           "bolts.tweetprocessor.TweetProcessor"
           ["tweet"]
-          :p 2
+          :p 1
           )
     }
   ]
