@@ -54,3 +54,5 @@ coverage.xml
 
 sentiment/config.json
 *.csv
+
+*.Rhistory
