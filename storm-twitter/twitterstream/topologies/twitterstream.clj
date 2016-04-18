@@ -19,7 +19,7 @@
           options
           {"word-spout" :shuffle}
           "bolts.saveDB.DatabaseBolt"
-          ["tweet"]
+          ["location" "tweet"]
           :p 1
           )
     
@@ -28,7 +28,7 @@
           options
           {"word-spout" :shuffle}
           "bolts.tweetprocessor.TweetProcessor"
-          ["tweet"]
+          ["location" "tweet"]
           :p 1
           )
     }

@@ -5,7 +5,7 @@ import  pymongo
 from httplib import IncompleteRead
 from Config_Utils.config import config
 from pykafka import KafkaClient
-
+import json
 
 CONSUMER_KEY = config.get_environment_variable('TWITTER_CONSUMER_KEY')
 CONSUMER_SECRET = config.get_environment_variable('TWITTER_CONSUMER_SECRET')
@@ -29,39 +29,44 @@ class TweetExtractor(tweepy.StreamListener):
         self.Tweets = pymongo.MongoClient().tweets
 
     def on_status(self, status):
-        #print status.text, "\n"
-
+        
         data = {}
-
         data['location'] = status.user.location
         data['text'] = status.text
-        data['created_at'] = status.created_at
+        data['created_at'] = str(status.created_at)
         data['geo'] = status.geo
-       # print status.text
        
+        #converting dictionary back to json format       
+        json_tweet_format = json.dumps(data)
+        #print json_tweet_format, type(json_tweet_format)
+
         #saving to MongoDB; comment out if not needed
         #self.save_tweets_to_db(data)
 
         #writing to Kafka Queue
         client = KafkaClient(hosts='127.0.0.1:9092')
-        topic = client.topics[str('newtweets')]
+        topic = client.topics[str('testtweets7')]
         with topic.get_producer(delivery_reports=False) as producer:
-            sentence = status.text.encode('ascii','ignore')
-            print sentence
-            producer.produce(sentence)
-            '''for word in sentence.split(" "):
-            if word is None:
-                continue
-            try:
-                word = str(word)
-                completesentence = completesentence + word + " "
-                #print word
-              #  producer.produce(word)
-            except:
-                continue
-        print completesentence
-        producer.produce(completesentence)
-        completesentence = ""'''
+            #tweet = status.text.encode('ascii','ignore')
+            
+            #if status.user.location is None:
+                #location = status.user.location
+            #else:
+                #location = status.user.location.encode('ascii','ignore')
+            #created_at = str(status.created_at)
+            #geo = str(status.geo)
+            print json_tweet_format
+            #print location
+            #print created_at
+            #print geo
+            #if location is None:
+                #producer.produce("NONE " + tweet)
+            #else:
+                #producer.produce(location + tweet)
+            producer.produce(json_tweet_format)
+            #producer.produce(created_at)
+            #producer.produce(geo)
+            
 
     def save_tweets_to_db(self, data):
         self.Tweets.tweets.insert(data)
