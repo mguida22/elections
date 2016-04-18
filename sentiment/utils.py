@@ -1,6 +1,7 @@
 import pickle
 import os.path
 import json
+import re
 
 
 STOPWORDS = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you',
@@ -61,7 +62,6 @@ def load_classifier(name):
     with open(config[name]['classifier_path'], 'rb') as f:
         return (pickle.load(f), feats[config[name]['feats_name']])
 
-
 def word_feats(words):
     '''
     create dictionary of features
@@ -70,10 +70,12 @@ def word_feats(words):
     words = words.split(' ')
     for word in words:
         word = word.lower()
-        if word not in STOPWORDS:
-            d[word] = True
-        else:
-            d[word] = False
+        word = re.sub('[^a-zA-Z#@]+', '', word)
+        if len(word) is not 0:
+            if word not in STOPWORDS:
+                d[word] = True
+            else:
+                d[word] = False
 
     return d
 

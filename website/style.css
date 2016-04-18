@@ -5,19 +5,31 @@ body {
 svg {
   font: 10px sans-serif;
 }
+
 .line-pos {
   fill: none;
   stroke: #76ad44;
   stroke-width: 1.5px;
 }
+
 .line-neg {
   fill: none;
   stroke: #ff0000;
   stroke-width: 1.5px;
 }
+
 .axis path,
 .axis line {
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
+}
+
+.headshot {
+  float: left;
+  margin-left: 10%;
+}
+
+.img-circle {
+  border-radius: 50%;
 }

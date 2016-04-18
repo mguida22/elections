@@ -1,13 +1,22 @@
 #! /usr/bin/env python3
 
 import csv
+import sys
 
-# the number of tweets to add to the trimmed set.
-# set at 800000 for all tweets, lower if you want the training to go faster
-LIMIT = 800000
+# the number of tweets per category to add to the trimmed set.
+# set at 400000 for all tweets, lower if you want the training to go faster
 INFILE = 'training_set.csv'
+LIMIT = 400000
 
-print('Reducing data. This may take a long time.')
+# take in args if available
+if len(sys.argv) == 2:
+    INFILE = str(sys.argv[1])
+elif len(sys.argv) == 3:
+    INFILE = str(sys.argv[1])
+    LIMIT = int(sys.argv[2])
+
+print('Triming to {0} tweets per category'.format(LIMIT))
+print('This may take a long time.')
 
 posCount = 0
 negCount = 0
