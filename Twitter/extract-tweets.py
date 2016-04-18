@@ -30,12 +30,15 @@ class TweetExtractor(tweepy.StreamListener):
 
     def on_status(self, status):
         
+
         data = {}
         data['location'] = status.user.location
         data['text'] = status.text
         data['created_at'] = str(status.created_at)
         data['geo'] = status.geo
-       
+        candidate = self.identify_candidate_from_tweet(status.text)
+        data['candidate'] = candidate       
+
         #converting dictionary back to json format       
         json_tweet_format = json.dumps(data)
         #print json_tweet_format, type(json_tweet_format)
@@ -47,26 +50,30 @@ class TweetExtractor(tweepy.StreamListener):
         client = KafkaClient(hosts='127.0.0.1:9092')
         topic = client.topics[str('testtweets7')]
         with topic.get_producer(delivery_reports=False) as producer:
-            #tweet = status.text.encode('ascii','ignore')
-            
-            #if status.user.location is None:
-                #location = status.user.location
-            #else:
-                #location = status.user.location.encode('ascii','ignore')
-            #created_at = str(status.created_at)
-            #geo = str(status.geo)
+           
             print json_tweet_format
-            #print location
-            #print created_at
-            #print geo
-            #if location is None:
-                #producer.produce("NONE " + tweet)
-            #else:
-                #producer.produce(location + tweet)
+       
             producer.produce(json_tweet_format)
-            #producer.produce(created_at)
-            #producer.produce(geo)
             
+    def identify_candidate_from_tweet(self,tweet):
+
+        tweet_words = tweet.lower()
+
+        if tweet_words.find("berniesanders") > 0 or tweet_words.find("bernie") > 0:
+            return "berniesanders"
+        if tweet_words.find("hillaryclinton") >0  or tweet_words.find("hillary") > 0:
+            return "hillaryclinton" 
+        if tweet_words.find("donaldtrump") > 0 or tweet_words.find("trump") > 0:
+            return "donaldtrump"
+        if tweet_words.find("tedcruz") >0  or tweet_words.find("cruz") > 0:
+            return "tedcruz" 
+        if tweet_words.find("johnkasich") > 0 or tweet_words.find("kasich") > 0:
+            return "johnkasich"
+        if tweet_words.find("marcorubio") >0  or tweet_words.find("rubio") > 0:
+            return "marcorubio" 
+        
+        return "none"
+
 
     def save_tweets_to_db(self, data):
         self.Tweets.tweets.insert(data)
