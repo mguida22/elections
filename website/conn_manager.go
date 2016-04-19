@@ -2,11 +2,11 @@ package main
 
 //
 //
-// Connections are matained here, but the data sent out is not
+// Connections are maintained here, but the data sent out is not
 //
 //
 
-//a Connection Hub is responsable for which clients are connected to the server
+//a Connection Hub is responsible for which clients are connected to the server
 //and who needs messages
 type ConHub struct {
 
@@ -15,23 +15,23 @@ type ConHub struct {
 	//are just booleans and are meaningless.)
 	connections map[*connection]bool
 
-	//Register new clients
+	//A channel that is used to register new clients
 	register chan *connection
 
-	//Unregister all old clients
+	//a channel that is used to unregister old clients
 	unregister chan *connection
 
-	//message that gets sent out to all the users
+	//a channel that is used to message that gets sent out to all the users
 	broadcast chan pushMessage
 }
 
-//abrastion out the chan to a connection, this makes it easier to add parts
+//abstraction out the channel to a connection, this makes it easier to add parts
 //laster and gets rid of (chan chan objects)
 type connection struct {
 	send chan pushMessage
 }
 
-//again, abstract out the string that usally goes in the chanel above.
+//again, abstract out the string that usually goes in the channel above.
 //this is very import because we can send an object which can have all
 //sorts of fields, we will use this abstraction much more than the
 //connection abstraction above
@@ -67,7 +67,11 @@ func (hub *ConHub) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	//defer the function for when the connection closes
 	go func() {
+
+		//this waits for something to hit the notify channel, it waits here
+		//until the connection closes and writes to the channel
 		<-notify
+
 		hub.unregister <- newConnection
 	}()
 
@@ -86,17 +90,17 @@ func (hub *ConHub) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "data:%s\n\n", msg)
 
 		//Flush the response.  This is only possible if
-		//the repsonse supports streaming.
+		//the response supports streaming.
 		f.Flush()
 	}
 }
 
-//This ConHub method starts a new goroutine.  It handles
+//This ConHub method starts a new go-routine.  It handles
 //the addition & removal of clients, as well as the broadcasting
 //of messages out to clients that are currently attached.
 func (hub *ConHub) run() {
 
-	//Start a goroutine so that this run concrently
+	//Start a go-routine so that this run concurrently
 	go func() {
 
 		//Loop endlessly
@@ -116,8 +120,8 @@ func (hub *ConHub) run() {
 			case c := <-hub.unregister:
 				{
 					//if the connection is over, we need to close
-					//the conenction and delte the conection from the
-					//conection list
+					//the connection and delete the connection from the
+					//connection list
 					if _, ok := hub.connections[c]; ok {
 						delete(hub.connections, c)
 						close(c.send)

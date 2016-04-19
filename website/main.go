@@ -23,7 +23,7 @@ func main() {
 
 	//Make b the HTTP handler for "/events/".  It can do
 	//this because it has a ServeHTTP method.  That method
-	//is called in a separate goroutine for each
+	//is called in a separate go-routine for each
 	//request to "/events/".
 	http.Handle("/events/", hub)
 
