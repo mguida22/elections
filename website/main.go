@@ -61,8 +61,6 @@ func (hub *ConHub) run() {
 					//There is a new client attached and we
 					//want to start sending them messages.
 					hub.connections[c] = true
-
-					log.Println("opened")
 				}
 
 			case c := <-hub.unregister:
@@ -74,8 +72,6 @@ func (hub *ConHub) run() {
 						delete(hub.connections, c)
 						close(c.send)
 					}
-
-					log.Println("closed")
 				}
 
 			case msg := <-hub.broadcast:
@@ -88,9 +84,9 @@ func (hub *ConHub) run() {
 						//if there is something to send
 						//send it
 						c.send <- msg
-
-						log.Println("sent")
 					}
+					log.Println("Send message to %d connections",
+						len(hub.connections))
 				}
 			}
 		}
@@ -117,6 +113,8 @@ func (hub *ConHub) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// send this client messages.
 	newConnection := &connection{}
 
+	newConnection.send = make(chan pushMessage)
+
 	// Add this client to the map of those that should
 	// receive updates
 	hub.register <- newConnection
@@ -138,15 +136,12 @@ func (hub *ConHub) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Write to the ResponseWriter, `w`.
-		fmt.Fprintf(w, "%s\n\n", msg)
+		fmt.Fprintf(w, "data:%s\n\n", msg)
 
 		// Flush the response.  This is only possible if
 		// the repsonse supports streaming.
 		f.Flush()
-
 	}
-
-	log.Println("finished")
 }
 
 // Handler for the main page, which we wire up to the
@@ -171,10 +166,7 @@ func MainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Render the template, writing to `w`.
-	t.Execute(w, "Duder")
-
-	// Done.
-	log.Println("Finished HTTP request at ", r.URL.Path)
+	t.Execute(w, nil)
 }
 
 // Main routine
@@ -213,9 +205,6 @@ func main() {
 			hub.broadcast <- newPush
 
 			time.Sleep(5 * 1e9)
-
-			log.Println("he")
-
 		}
 	}()
 
