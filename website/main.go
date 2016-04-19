@@ -159,12 +159,16 @@ func MainPageHandler(w http.ResponseWriter, r *http.Request) {
 	// prefix of the request URL?  It's true.  Here we
 	// insist the path is just "/".
 	if r.URL.Path != "/" {
-		w.WriteHeader(http.StatusNotFound)
+
+		fs := http.FileServer(http.Dir("static"))
+		http.Handle("/static/", http.StripPrefix("/static/", fs))
+
+		// w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	// Read in the template with our SSE JavaScript code.
-	t, err := template.ParseFiles("templates/index.html")
+	t, err := template.ParseFiles("static/index.html")
 	if err != nil {
 		log.Fatal(err)
 

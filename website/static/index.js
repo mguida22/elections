@@ -1,3 +1,12 @@
+// Create a new HTML5 EventSource
+var source = new EventSource('events/');
+// Create a callback for when a new message is received.
+source.onmessage = function(e) {
+    // Append the `data` attribute of the message to the DOM.
+    // document.body.innerHTML += e.data + '<br>';
+    console.log(e.data);
+};
+
 function random() {
   return Math.floor(Math.random() * 101);
 }
