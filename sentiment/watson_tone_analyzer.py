@@ -7,6 +7,7 @@ from Config_Utils.config import config
 
 WATSON_KEY = config.get_environment_variable('WATSON_KEY')
 WATSON_PASSWORD = config.get_environment_variable('WATSON_PASSWORD')
+
 #create Bluemix account to get service_username and service_password
 tone_analyzer = ToneAnalyzer(username=WATSON_KEY,
                              password=WATSON_PASSWORD,
@@ -23,7 +24,6 @@ def get_sentiment_from_watson(cursor):
 	cursor = cursor[:100]
 	for document in cursor:
 		tweet = document['text']
-		candidate = identify_candidate_from_tweet(tweet)
 		sentimentData = tone_analyzer.tone(text=tweet)
 		anger=sentimentData["document_tone"]["tone_categories"][0]["tones"][0]["score"]
 		disgust=sentimentData["document_tone"]["tone_categories"][0]["tones"][1]["score"]

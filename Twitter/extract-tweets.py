@@ -13,6 +13,7 @@ ACCESS_TOKEN_KEY = config.get_environment_variable('TWITTER_ACCESS_TOKEN_KEY')
 ACCESS_TOKEN_SECRET = config.get_environment_variable(
     'TWITTER_ACCESS_TOKEN_SECRET')
 
+
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_TOKEN_KEY, ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
