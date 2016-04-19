@@ -15,7 +15,7 @@ class TweetSpout(Spout):
         client = KafkaClient(hosts='127.0.0.1:9092')
 
         # look into the topic "tweets" where the producer pushes the tweets.
-        self.topic = client.topics[str('testtweets7')]
+        self.topic = client.topics[str('twitterfeed')]
 
     def next_tuple(self):
         consumer = self.topic.get_simple_consumer()
