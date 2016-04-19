@@ -8,151 +8,149 @@ import (
 	"time"
 )
 
-//a broker is responsable for which clients are connected to the server
+//a Connection Hub is responsable for which clients are connected to the server
 //and who needs messages
-type Broker struct {
+type ConHub struct {
 
-	// Create a map of clients, the keys of the map are the channels
-	// over which we can push messages to attached clients.  (The values
-	// are just booleans and are meaningless.)
-	clients map[chan string]bool
+	//Create a map of clients, the keys of the map are the channels
+	//over which we can push messages to attached clients.  (The values
+	//are just booleans and are meaningless.)
+	connections map[*connection]bool
 
-	// Channel into which new clients can be pushed
-	newClients chan chan string
+	//Register new clients
+	register chan *connection
 
-	// Channel into which disconnected clients should be pushed
-	defunctClients chan chan string
+	//Unregister all old clients
+	unregister chan *connection
 
-	// Channel into which messages are pushed to be broadcast out
-	// to attahed clients.
-	messages chan string
+	//message that gets sent out to all the users
+	broadcast chan pushMessage
 }
 
-// This Broker method starts a new goroutine.  It handles
-// the addition & removal of clients, as well as the broadcasting
-// of messages out to clients that are currently attached.
-//
-func (b *Broker) Start() {
+//abrastion out the chan to a connection, this makes it easier to add parts
+//laster and gets rid of (chan chan objects)
+type connection struct {
+	send chan pushMessage
+}
 
-	// Start a goroutine
-	//
+//again, abstract out the string that usally goes in the chanel above.
+//this is very import because we can send an object which can have all
+//sorts of fields, we will use this abstraction much more than the
+//connection abstraction above
+type pushMessage struct {
+	main string
+}
+
+//This ConHub method starts a new goroutine.  It handles
+//the addition & removal of clients, as well as the broadcasting
+//of messages out to clients that are currently attached.
+func (hub *ConHub) run() {
+
+	//Start a goroutine so that this run concrently
 	go func() {
 
-		// Loop endlessly
-		//
+		//Loop endlessly
 		for {
 
-			// Block until we receive from one of the
-			// three following channels.
+			//Block until we receive from one of the
+			//three following channels.
 			select {
 
-			case s := <-b.newClients:
+			case c := <-hub.register:
+				{
+					//There is a new client attached and we
+					//want to start sending them messages.
+					hub.connections[c] = true
 
-				// There is a new client attached and we
-				// want to start sending them messages.
-				b.clients[s] = true
-				log.Println("Added new client")
-
-			case s := <-b.defunctClients:
-
-				// A client has dettached and we want to
-				// stop sending them messages.
-				delete(b.clients, s)
-				close(s)
-
-				log.Println("Removed client")
-
-			case msg := <-b.messages:
-
-				// There is a new message to send.  For each
-				// attached client, push the new message
-				// into the client's message channel.
-				for s, _ := range b.clients {
-					s <- msg
+					log.Println("opened")
 				}
-				log.Printf("Broadcast message to %d clients", len(b.clients))
+
+			case c := <-hub.unregister:
+				{
+					//if the connection is over, we need to close
+					//the conenction and delte the conection from the
+					//conection list
+					if _, ok := hub.connections[c]; ok {
+						delete(hub.connections, c)
+						close(c.send)
+					}
+
+					log.Println("closed")
+				}
+
+			case msg := <-hub.broadcast:
+				{
+					// There is a new message to send.  For each
+					// attached client, push the new message
+					// into the client's message channel.
+					for c := range hub.connections {
+
+						//if there is something to send
+						//send it
+						c.send <- msg
+
+						log.Println("sent")
+					}
+				}
 			}
 		}
 	}()
 }
 
-// This Broker method handles and HTTP request at the "/events/" URL.
-//
-func (b *Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+// This Connection Hub method handles and HTTP request at the "/events/" URL.
+func (hub *ConHub) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Make sure that the writer supports flushing.
-	//
 	f, ok := w.(http.Flusher)
+
 	if !ok {
 		http.Error(w, "Streaming unsupported!", http.StatusInternalServerError)
 		return
 	}
-
-	// Create a new channel, over which the broker can
-	// send this client messages.
-	messageChan := make(chan string)
-
-	// Add this client to the map of those that should
-	// receive updates
-	b.newClients <- messageChan
-
-	// Listen to the closing of the http connection via the CloseNotifier
-	notify := w.(http.CloseNotifier).CloseNotify()
-	go func() {
-		<-notify
-		// Remove this client from the map of attached clients
-		// when `EventHandler` exits.
-		b.defunctClients <- messageChan
-		log.Println("HTTP connection just closed.")
-	}()
 
 	// Set the headers related to event streaming.
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
-	// Don't close the connection, instead loop 10 times,
-	// sending messages and flushing the response each time
-	// there is a new message to send along.
-	//
-	// NOTE: we could loop endlessly; however, then you
-	// could not easily detect clients that dettach and the
-	// server would continue to send them messages long after
-	// they're gone due to the "keep-alive" header.  One of
-	// the nifty aspects of SSE is that clients automatically
-	// reconnect when they lose their connection.
-	//
-	// A better way to do this is to use the CloseNotifier
-	// interface that will appear in future releases of
-	// Go (this is written as of 1.0.3):
-	// https://code.google.com/p/go/source/detail?name=3292433291b2
-	//
+	// Create a new channel, over which the broker can
+	// send this client messages.
+	newConnection := &connection{}
+
+	// Add this client to the map of those that should
+	// receive updates
+	hub.register <- newConnection
+
+	// Listen to the closing of the http connection via the CloseNotifier
+	notify := w.(http.CloseNotifier).CloseNotify()
+
+	go func() {
+		<-notify
+		hub.unregister <- newConnection
+	}()
+
 	for {
 
-		// Read from our messageChan.
-		msg, open := <-messageChan
+		msg, open := <-newConnection.send
 
 		if !open {
-			// If our messageChan was closed, this means that the client has
-			// disconnected.
 			break
 		}
 
 		// Write to the ResponseWriter, `w`.
-		fmt.Fprintf(w, "data: Message: %s\n\n", msg)
+		fmt.Fprintf(w, "%s\n\n", msg)
 
 		// Flush the response.  This is only possible if
 		// the repsonse supports streaming.
 		f.Flush()
+
 	}
 
-	// Done.
-	log.Println("Finished HTTP request at ", r.URL.Path)
+	log.Println("finished")
 }
 
 // Handler for the main page, which we wire up to the
 // route at "/" below in `main`.
-//
 func MainPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Did you know Golang's ServeMux matches only the
@@ -162,8 +160,6 @@ func MainPageHandler(w http.ResponseWriter, r *http.Request) {
 
 		fs := http.FileServer(http.Dir("static"))
 		http.Handle("/static/", http.StripPrefix("/static/", fs))
-
-		// w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -185,66 +181,48 @@ func MainPageHandler(w http.ResponseWriter, r *http.Request) {
 //
 func main() {
 
-	// Make a new Broker instance
-	b := &Broker{
-		make(map[chan string]bool),
-		make(chan (chan string)),
-		make(chan (chan string)),
-		make(chan string),
+	// Make a new Connection Hub instance
+	hub := &ConHub{
+		broadcast:   make(chan pushMessage),
+		register:    make(chan *connection),
+		unregister:  make(chan *connection),
+		connections: make(map[*connection]bool),
 	}
 
 	// Start processing events
-	b.Start()
+	hub.run()
 
 	// Make b the HTTP handler for "/events/".  It can do
 	// this because it has a ServeHTTP method.  That method
 	// is called in a separate goroutine for each
 	// request to "/events/".
-	http.Handle("/events/", b)
+	http.Handle("/events/", hub)
 
 	// Generate a constant stream of events that get pushed
 	// into the Broker's messages channel and are then broadcast
 	// out to any clients that are attached.
+
+	newPush := pushMessage{}
+
 	go func() {
 		for i := 0; ; i++ {
 
 			// Create a little message to send to clients,
 			// including the current time.
-			b.messages <- fmt.Sprintf("%d - the time is %v", i, time.Now())
+			newPush.main = fmt.Sprintf("%d - the time is %v", i, time.Now())
+			hub.broadcast <- newPush
 
-			// Print a nice log message and sleep for 5s.
-			log.Printf("Sent message %d ", i)
 			time.Sleep(5 * 1e9)
+
+			log.Println("he")
 
 		}
 	}()
 
 	// When we get a request at "/", call `MainPageHandler`
 	// in a new goroutine.
-	http.Handle("/", http.HandlerFunc(MainPageHandler))
+	http.HandleFunc("/", MainPageHandler)
 
 	// Start the server and listen forever on port 8000.
 	http.ListenAndServe(":8000", nil)
 }
-
-//Frontend Example
-/*
-<!DOCTYPE html>
-<html>
-<head>
-    <title>HTML5 Server Side Event Example in Go</title>
-</head>
-<body>
-
-    <script type="text/javascript">
-        // Create a new HTML5 EventSource
-        var source = new EventSource('/events/');
-        // Create a callback for when a new message is received.
-        source.onmessage = function(e) {
-            // Append the `data` attribute of the message to the DOM.
-            document.body.innerHTML += e.data + '<br>';
-        };
-    </script>
-</body>
-</html>
-*/
