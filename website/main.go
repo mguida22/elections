@@ -76,16 +76,14 @@ func (hub *ConHub) run() {
 
 			case msg := <-hub.broadcast:
 				{
-					// There is a new message to send.  For each
-					// attached client, push the new message
-					// into the client's message channel.
+					//for every connection that is active
 					for c := range hub.connections {
 
 						//if there is something to send
 						//send it
 						c.send <- msg
 					}
-					log.Println("Send message to %d connections",
+					log.Printf("Sent message to %d connections\n",
 						len(hub.connections))
 				}
 			}
@@ -93,10 +91,10 @@ func (hub *ConHub) run() {
 	}()
 }
 
-// This Connection Hub method handles and HTTP request at the "/events/" URL.
+//This Connection Hub method handles and HTTP request at the "/events/" URL.
 func (hub *ConHub) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	// Make sure that the writer supports flushing.
+	//Make sure that the writer supports flushing.
 	f, ok := w.(http.Flusher)
 
 	if !ok {
@@ -104,33 +102,34 @@ func (hub *ConHub) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set the headers related to event streaming.
+	//Set the headers related to event streaming.
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
-	// Create a new channel, over which the broker can
-	// send this client messages.
+	//create a new connection and register the chan
 	newConnection := &connection{}
-
 	newConnection.send = make(chan pushMessage)
 
-	// Add this client to the map of those that should
-	// receive updates
+	//register the connection so that we send messages to it
 	hub.register <- newConnection
 
-	// Listen to the closing of the http connection via the CloseNotifier
+	//Listen to the closing of the http connection via the CloseNotifier
 	notify := w.(http.CloseNotifier).CloseNotify()
 
+	//defer the function for when the connection closes
 	go func() {
 		<-notify
 		hub.unregister <- newConnection
 	}()
 
+	//for every message
 	for {
 
+		//get the message
 		msg, open := <-newConnection.send
 
+		//break once the connection is closed
 		if !open {
 			break
 		}
@@ -138,42 +137,35 @@ func (hub *ConHub) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// Write to the ResponseWriter, `w`.
 		fmt.Fprintf(w, "data:%s\n\n", msg)
 
-		// Flush the response.  This is only possible if
-		// the repsonse supports streaming.
+		//Flush the response.  This is only possible if
+		//the repsonse supports streaming.
 		f.Flush()
 	}
 }
 
-// Handler for the main page, which we wire up to the
-// route at "/" below in `main`.
+//Handler for the main page
 func MainPageHandler(w http.ResponseWriter, r *http.Request) {
 
-	// Did you know Golang's ServeMux matches only the
-	// prefix of the request URL?  It's true.  Here we
-	// insist the path is just "/".
+	//make sure we don't match on anything but the root
 	if r.URL.Path != "/" {
-
-		fs := http.FileServer(http.Dir("static"))
-		http.Handle("/static/", http.StripPrefix("/static/", fs))
+		http.Redirect(w, r, "/", 303)
 		return
 	}
 
 	// Read in the template with our SSE JavaScript code.
 	t, err := template.ParseFiles("static/index.html")
+
 	if err != nil {
 		log.Fatal(err)
-
 	}
 
 	// Render the template, writing to `w`.
 	t.Execute(w, nil)
 }
 
-// Main routine
-//
 func main() {
 
-	// Make a new Connection Hub instance
+	//Make a new Connection Hub instance
 	hub := &ConHub{
 		broadcast:   make(chan pushMessage),
 		register:    make(chan *connection),
@@ -181,37 +173,42 @@ func main() {
 		connections: make(map[*connection]bool),
 	}
 
-	// Start processing events
+	//Start processing events
 	hub.run()
 
-	// Make b the HTTP handler for "/events/".  It can do
-	// this because it has a ServeHTTP method.  That method
-	// is called in a separate goroutine for each
-	// request to "/events/".
+	//Make b the HTTP handler for "/events/".  It can do
+	//this because it has a ServeHTTP method.  That method
+	//is called in a separate goroutine for each
+	//request to "/events/".
 	http.Handle("/events/", hub)
 
-	// Generate a constant stream of events that get pushed
-	// into the Broker's messages channel and are then broadcast
-	// out to any clients that are attached.
-
+	//create a new push object for us to push into
+	//we will get rid of this once we get everything together
 	newPush := pushMessage{}
 
+	//generate a fake function that sends the time to the user every second
+	//again we will get rid of this once we get storm working
 	go func() {
 		for i := 0; ; i++ {
 
-			// Create a little message to send to clients,
-			// including the current time.
+			//create the message to send to the user
 			newPush.main = fmt.Sprintf("%d - the time is %v", i, time.Now())
+
+			//send the message
 			hub.broadcast <- newPush
 
-			time.Sleep(5 * 1e9)
+			//wait a second
+			time.Sleep(time.Second)
 		}
 	}()
 
-	// When we get a request at "/", call `MainPageHandler`
-	// in a new goroutine.
+	//start the main handler
 	http.HandleFunc("/", MainPageHandler)
 
-	// Start the server and listen forever on port 8000.
+	//start the static file server in the /static/ dir
+	fs := http.FileServer(http.Dir("static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
+	//start the server on port 8000, this will listen forever
 	http.ListenAndServe(":8000", nil)
 }
