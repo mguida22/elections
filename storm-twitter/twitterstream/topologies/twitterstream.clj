@@ -14,7 +14,7 @@
     }
 
     ;; bolt configuration
-   
+
     {"storeDB-bolt" (python-bolt-spec
           options
           {"word-spout" :shuffle}
@@ -22,7 +22,7 @@
           ["location" "tweet"]
           :p 1
           )
-    
+
 
     "count-bolt" (python-bolt-spec
           options

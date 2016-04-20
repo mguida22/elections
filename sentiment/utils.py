@@ -62,6 +62,7 @@ def load_classifier(name):
     with open(config[name]['classifier_path'], 'rb') as f:
         return (pickle.load(f), feats[config[name]['feats_name']])
 
+
 def word_feats(words):
     '''
     create dictionary of features

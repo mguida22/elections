@@ -67,7 +67,8 @@ def pick_classifier(classifiers, runs=1):
             print('Training and testing \'{0}\' classifier. Run {1} of {2}'.format(
                 name, i + 1, runs))
             # train the classifier with dataset and feature function
-            curr_classifier, curr_accuracy = train_classifier(classifiers[name])
+            curr_classifier, curr_accuracy = train_classifier(classifiers[
+                                                              name])
 
             print('Accuracy: {0}\n'.format(curr_accuracy))
 
