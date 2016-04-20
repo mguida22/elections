@@ -2,13 +2,13 @@
 
 import os
 
-import utils
+from .utils import load_classifier
 
 
 class Analyzer:
 
     def __init__(self, classifier='default_classifier'):
-        self.classifier, self.feats = utils.load_classifier(classifier)
+        self.classifier, self.feats = load_classifier(classifier)
 
     def classify(self, s):
         tokenized = self.feats(s)

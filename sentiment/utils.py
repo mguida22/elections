@@ -49,17 +49,17 @@ def load_classifier(name):
     '''
     load the classifier by file path
     '''
-    if os.path.isfile('config.json') is True:
-        with open('config.json', 'r') as f:
+    if os.path.isfile('sentiment/config.json') is True:
+        with open('sentiment/config.json', 'r') as f:
             try:
                 config = json.load(f)
             except:
-                print('Check config.json')
+                print('Check sentiment/config.json')
                 raise
     else:
-        raise FileNotFoundError('config.json')
+        raise FileNotFoundError('sentiment/config.json')
 
-    with open(config[name]['classifier_path'], 'rb') as f:
+    with open('sentiment/' + config[name]['classifier_path'], 'rb') as f:
         return (pickle.load(f), feats[config[name]['feats_name']])
 
 
