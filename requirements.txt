@@ -1,0 +1,4 @@
+pymongo
+tweepy
+pykafka
+python-dotenv
