@@ -1,7 +1,10 @@
 # _*_ coding:utf-8 _*_
+
+import sys, os
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
+
 import tweepy
-import sys
-import  pymongo
+import pymongo
 from httplib import IncompleteRead
 from Config_Utils.config import config
 from pykafka import KafkaClient
@@ -38,7 +41,7 @@ class TweetExtractor(tweepy.StreamListener):
 
 
     def on_status(self, status):
-        
+
 
         data = {}
         data['location'] = status.user.location
@@ -46,9 +49,15 @@ class TweetExtractor(tweepy.StreamListener):
         data['created_at'] = str(status.created_at)
         data['geo'] = status.geo
         candidate = self.identify_candidate_from_tweet(status.text)
+
         data['candidate'] = candidate       
         print status.text
         #converting dictionary back to json format       
+
+        data['candidate'] = candidate
+
+        #converting dictionary back to json format
+
         json_tweet_format = json.dumps(data)
         #print json_tweet_format, type(json_tweet_format)
 
@@ -56,6 +65,7 @@ class TweetExtractor(tweepy.StreamListener):
         #self.save_tweets_to_db(data)
 
         #writing to Kafka Queue
+
         
        
         self.producer.produce(json_tweet_format)
@@ -66,6 +76,17 @@ class TweetExtractor(tweepy.StreamListener):
             #producer.produce(json_tweet_format)
     
     #simple hack to find the candidates from the tweets        
+
+        client = KafkaClient(hosts='127.0.0.1:9092')
+        topic = client.topics[str('twitterfeed')]
+        with topic.get_producer(delivery_reports=False) as producer:
+
+            #print json_tweet_format
+
+            producer.produce(json_tweet_format)
+
+    #simple hack to find the candidates from the tweets
+
     def identify_candidate_from_tweet(self,tweet):
 
         tweet_words = tweet.lower()
@@ -73,16 +94,16 @@ class TweetExtractor(tweepy.StreamListener):
         if tweet_words.find("berniesanders") > 0 or tweet_words.find("bernie") > 0:
             return "berniesanders"
         if tweet_words.find("hillaryclinton") >0  or tweet_words.find("hillary") > 0:
-            return "hillaryclinton" 
+            return "hillaryclinton"
         if tweet_words.find("donaldtrump") > 0 or tweet_words.find("trump") > 0:
             return "donaldtrump"
         if tweet_words.find("tedcruz") >0  or tweet_words.find("cruz") > 0:
-            return "tedcruz" 
+            return "tedcruz"
         if tweet_words.find("johnkasich") > 0 or tweet_words.find("kasich") > 0:
             return "johnkasich"
         if tweet_words.find("marcorubio") >0  or tweet_words.find("rubio") > 0:
-            return "marcorubio" 
-        
+            return "marcorubio"
+
         return "none"
 
 
