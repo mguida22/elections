@@ -6,7 +6,7 @@ sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 import tweepy
 import pymongo
-from httplib import IncompleteRead
+from http.client import IncompleteRead
 from Config_Utils.config import config
 from pykafka import KafkaClient
 import json
@@ -23,7 +23,7 @@ auth.set_access_token(ACCESS_TOKEN_KEY, ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
 
 client = KafkaClient(hosts='127.0.0.1:9092')
-topic = client.topics[str('twitterfeed')]
+topic = client.topics[bytes('twitterfeed', 'utf-8')]
 producer = topic.get_producer(delivery_reports=False)
 
 ''' A kafka queue is created with a "topic" and the tweets are written on to that topic.
@@ -41,7 +41,6 @@ class TweetExtractor(tweepy.StreamListener):
         self.producer = producer
 
     def on_status(self, status):
-
         data = {}
         data['location'] = status.user.location
         data['text'] = status.text
@@ -50,15 +49,13 @@ class TweetExtractor(tweepy.StreamListener):
         candidate = self.identify_candidate_from_tweet(status.text)
 
         data['candidate'] = candidate
-        print status.text
+        print(status.text)
+
         # converting dictionary back to json format
-
-        data['candidate'] = candidate
-
         json_tweet_format = json.dumps(data)
 
         # writing to Kafka Queue
-        self.producer.produce(json_tweet_format)
+        self.producer.produce(bytes(json_tweet_format, 'utf-8'))
 
     def identify_candidate_from_tweet(self, tweet):
 
@@ -84,11 +81,11 @@ class TweetExtractor(tweepy.StreamListener):
 
     # handle errors without closing stream:
     def on_error(self, status_code):
-        print >> sys.stderr, 'Encountered error with status code:', status_code
+        print('Encountered error with status code: {0}'.format(status_code), file=sys.stderr)
         return True
 
     def on_timeout(self):
-        print >> sys.stderr, 'Timeout...'
+        print('Timeout...', file=sys.stderr)
         return True
 
 try:
