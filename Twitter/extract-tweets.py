@@ -56,36 +56,13 @@ class TweetExtractor(tweepy.StreamListener):
 
         data['candidate'] = candidate
 
-        #converting dictionary back to json format
-
-        json_tweet_format = json.dumps(data)
-        #print json_tweet_format, type(json_tweet_format)
-
-        #saving to MongoDB; comment out if not needed
-        #self.save_tweets_to_db(data)
-
-        #writing to Kafka Queue
-
         
-       
+        json_tweet_format = json.dumps(data)
+
+        #writing to Kafka Queue       
         self.producer.produce(json_tweet_format)
-        #with self.topic.get_producer(delivery_reports=False) as producer:
-          
-            #print json_tweet_format
-       
-            #producer.produce(json_tweet_format)
-    
-    #simple hack to find the candidates from the tweets        
 
-        client = KafkaClient(hosts='127.0.0.1:9092')
-        topic = client.topics[str('twitterfeed')]
-        with topic.get_producer(delivery_reports=False) as producer:
-
-            #print json_tweet_format
-
-            producer.produce(json_tweet_format)
-
-    #simple hack to find the candidates from the tweets
+ 
 
     def identify_candidate_from_tweet(self,tweet):
 
