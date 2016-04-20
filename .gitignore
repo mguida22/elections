@@ -58,4 +58,3 @@ sentiment/config.json
 *.csv
 
 *.Rhistory
-__init__.py
