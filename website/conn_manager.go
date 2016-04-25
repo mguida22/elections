@@ -6,6 +6,12 @@ package main
 //
 //
 
+import (
+	"fmt"
+	"log"
+	"net/http"
+)
+
 //a Connection Hub is responsible for which clients are connected to the server
 //and who needs messages
 type ConHub struct {
@@ -36,7 +42,7 @@ type connection struct {
 //sorts of fields, we will use this abstraction much more than the
 //connection abstraction above
 type pushMessage struct {
-	main string
+	main []byte
 }
 
 //This Connection Hub method handles and HTTP request at the "/events/" URL.
