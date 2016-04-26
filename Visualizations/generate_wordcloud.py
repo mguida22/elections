@@ -26,19 +26,19 @@ def fetch_tweets_from_mongo(time_lapsed, candidate):
 
 	tweet_list = []
 	current_time = get_current_time()
-	#print "current_time",current_time
+	print "current_time",current_time
 	time_lapse = datetime.timedelta(minutes=time_lapsed)
 	#print "time_lapse",time_lapse
-	query_time = str(current_time - time_lapse)
-	#print "query_time",query_time
+	query_time = current_time - time_lapse
+	print "query_time",query_time
 	db = pymongo.MongoClient().tweets
 
 	#TO-DO: rewrite query to include candidate name also
-	cursor = db.latest_tweets.find({ "$and": [ {"created_at":{ "$lt": query_time}}, { "candidate": candidate} ] })
+	cursor = db.latest_tweets.find({ "$and": [ {"created_at":{ "$gt": query_time}}, { "candidate": candidate} ] })
 	
 	# for displaying stats about the number of tweets
 	tweet_count = cursor.count()
-	#print tweet_count
+	print tweet_count
 	
 	for document in cursor:
 		tweet_list.append(document['text'])
