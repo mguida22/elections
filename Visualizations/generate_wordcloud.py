@@ -26,11 +26,11 @@ def fetch_tweets_from_mongo(time_lapsed, candidate):
 
 	tweet_list = []
 	current_time = get_current_time()
-	print "current_time",current_time
+	#print "current_time",current_time
 	time_lapse = datetime.timedelta(minutes=time_lapsed)
 	#print "time_lapse",time_lapse
 	query_time = current_time - time_lapse
-	print "query_time",query_time
+	#print "query_time",query_time
 	db = pymongo.MongoClient().tweets
 
 	#TO-DO: rewrite query to include candidate name also
@@ -38,7 +38,7 @@ def fetch_tweets_from_mongo(time_lapsed, candidate):
 	
 	# for displaying stats about the number of tweets
 	tweet_count = cursor.count()
-	print tweet_count
+	#print tweet_count
 	
 	for document in cursor:
 		tweet_list.append(document['text'])
@@ -72,12 +72,14 @@ def generate_wordcloud(tokens, candidate,filepath):
 	token_string = " ".join(tokens)
 	wordcloud = WordCloud(mask=mask,stopwords=custom_stop_words,background_color='black',width=1800,height=1400).generate(token_string)
 	image = wordcloud.to_image()
+
+    # TO-DO: Change to relative path.
 	image.save('/Users/narainsharma/Desktop/BigData/Elections/Visualizations/'+candidate+'.png')
 	#print image
 	image.show()
 	#plt.show()
 
-
+# TO-DO: Change to relative path
 mask_filepath = "/Users/narainsharma/Desktop/BigData/Elections/Visualizations/elections_image2.png"
 
 
