@@ -1,13 +1,14 @@
+#!/usr/bin/env python
 import datetime
 import  pymongo
 import nltk
-import matplotlib.pyplot as plt
 from nltk.util import ngrams
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
 from wordcloud import WordCloud
 import numpy as np
 from PIL import Image
+import sys
 
 def get_current_time():
 	#getting current date
@@ -18,11 +19,8 @@ def get_current_time():
 	curr_time_datetime =  datetime.datetime.strptime(current_time_twitter_format,'%Y-%m-%d %H:%M:%S')
 	return curr_time_datetime
 
-
-
 # to fetch tweets from mongo for the past m minutes pertaining to a particular candidate
-
-def fetch_tweets_from_mongo(time_lapsed, candidate, user_time):
+def fetch_tweets_from_mongo(time_lapsed, candidate):
 
 	tweet_list = []
 	current_time = get_current_time()
@@ -34,8 +32,12 @@ def fetch_tweets_from_mongo(time_lapsed, candidate, user_time):
 	db = pymongo.MongoClient().tweets
 
 	#TO-DO: rewrite query to include candidate name also
-	cursor = db.newtesttweets.find({"created_at":{ "$lt": query_time}})
-	#print cursor.count()
+	cursor = db.latest_tweets.find({ "$and": [ {"created_at":{ "$lt": query_time}}, { "candidate": candidate} ] })
+	
+	# for displaying stats about the number of tweets
+	tweet_count = cursor.count()
+	#print tweet_count
+	
 	for document in cursor:
 		tweet_list.append(document['text'])
 	return tweet_list
@@ -57,34 +59,42 @@ def process_tweets(tweet_list):
 		if not word in custom_stop_words:
 			filtered_tokens.append(word)
 	
+	#print "tweets processed"
 	return filtered_tokens
 
-# to generate n-grams. can be used if unigrams dont make sense. 
-def generate_ngrams(tokens,ngram):
-	
-	bgs = ngrams(tokens,ngram)
-	fdist = nltk.FreqDist(bgs)
-	for k,v in fdist.items():
-		if v > 5:
-			print k[0],v
-
 #currently using wordcloud library in python.
-def generate_wordcloud(tokens):
+def generate_wordcloud(tokens, candidate,filepath):
 
-	mask = np.array(Image.open("elections_image2.png"))
+	mask = np.array(Image.open(filepath))
 	token_string = " ".join(tokens)
 	wordcloud = WordCloud(mask=mask,stopwords=custom_stop_words,background_color='black',width=1800,height=1400).generate(token_string)
-	print "generated wordcloud"
-	plt.imshow(wordcloud)
-	plt.axis('off')
-	plt.savefig('wordcloud_output.png', dpi=300)
-	plt.show()
+	image = wordcloud.to_image()
+	image.save('/Users/narainsharma/Desktop/BigData/Elections/Visualizations/'+candidate+'.png')
+	#print image
+	image.show()
+	#plt.show()
 
+
+mask_filepath = "/Users/narainsharma/Desktop/BigData/Elections/Visualizations/elections_image2.png"
 #add any other stop words that may not be in the nltk stopwords list.
 custom_stop_words = set(stopwords.words("english"))
 custom_stop_words.add('https')
 custom_stop_words.add('rt')
 
-tweet_list = fetch_tweets_from_mongo(60, "bernie", 0)
-tokens = process_tweets(tweet_list)
-generate_wordcloud(tokens)
+trump_tweets = fetch_tweets_from_mongo(1, "donaldtrump")
+sanders_tweets = fetch_tweets_from_mongo(1,"berniesanders")
+clinton_tweets = fetch_tweets_from_mongo(1,"hillaryclinton")
+cruz_tweets  = fetch_tweets_from_mongo(1,"tedcruz")
+kasich_tweets = fetch_tweets_from_mongo(1,"johnkasich")
+
+trump_tokens = process_tweets(trump_tweets)
+sanders_tokens = process_tweets(sanders_tweets)
+clinton_tokens = process_tweets(clinton_tweets)
+cruz_tokens = process_tweets(cruz_tweets)
+kasich_tokens = process_tweets(kasich_tweets)
+
+generate_wordcloud(trump_tokens,"trump",mask_filepath)
+generate_wordcloud(sanders_tokens,"sanders",mask_filepath)
+generate_wordcloud(clinton_tokens,"clinton",mask_filepath)
+generate_wordcloud(cruz_tokens,"crux",mask_filepath)
+generate_wordcloud(kasich_tokens,"kasich",mask_filepath)

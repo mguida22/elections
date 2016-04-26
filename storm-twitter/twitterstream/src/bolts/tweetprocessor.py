@@ -20,7 +20,7 @@ class TweetProcessor(Bolt):
 
         # The tweet_text is available. Use this to perform sentiment analysis.
 
-        self.emit([tweet_text])
+        #self.emit([tweet_text])
         
         #for checking if this is working.
         self.log('%s' % (tweet_text.encode('ascii','ignore')))

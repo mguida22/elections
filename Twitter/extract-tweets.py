@@ -22,7 +22,7 @@ auth.set_access_token(ACCESS_TOKEN_KEY, ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
 
 client = KafkaClient(hosts='127.0.0.1:9092')
-topic = client.topics[str('twitterfeed')]
+topic = client.topics['twitterfeed']
 producer = topic.get_producer(delivery_reports=False)
 
 ''' A kafka queue is created with a "topic" and the tweets are written on to that topic.
