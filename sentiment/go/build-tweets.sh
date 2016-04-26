@@ -1,1 +1,0 @@
-cat tweet-files/file-* > tweets.txt

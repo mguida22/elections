@@ -58,3 +58,4 @@ sentiment/config.json
 *.csv
 
 *.Rhistory
+*.env

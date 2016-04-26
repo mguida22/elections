@@ -6,6 +6,12 @@ package main
 //
 //
 
+import (
+	"fmt"
+	"log"
+	"net/http"
+)
+
 //a Connection Hub is responsible for which clients are connected to the server
 //and who needs messages
 type ConHub struct {
@@ -35,9 +41,7 @@ type connection struct {
 //this is very import because we can send an object which can have all
 //sorts of fields, we will use this abstraction much more than the
 //connection abstraction above
-type pushMessage struct {
-	main string
-}
+type pushMessage []byte
 
 //This Connection Hub method handles and HTTP request at the "/events/" URL.
 func (hub *ConHub) ServeHTTP(w http.ResponseWriter, r *http.Request) {

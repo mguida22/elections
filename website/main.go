@@ -1,14 +1,73 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
+	"github.com/Shopify/sarama"
 	"html/template"
 	"log"
 	"net/http"
 	"time"
 )
 
+type feedMessage struct {
+	Sentiment string
+	Candidate string
+}
+
+type score struct {
+	Positive float64
+	Negative float64
+}
+
 func main() {
+
+	//create a new consumer to look at the tweets
+	consumer, err := sarama.NewConsumer([]string{"localhost:9092"}, nil)
+
+	//if there is an error, end the program
+	if err != nil {
+		panic(err)
+	}
+
+	//make sure to close the consumer when the function is over
+	defer func() {
+		if err := consumer.Close(); err != nil {
+			log.Fatalln(err)
+		}
+	}()
+
+	//create a new topic to listen
+	partitionConsumer, err := consumer.ConsumePartition("sentimentfeed", 0, sarama.OffsetNewest)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer func() {
+		if err := partitionConsumer.Close(); err != nil {
+			log.Fatalln(err)
+		}
+	}()
+
+	//create a message once so we can add to it later
+	newSentiment := feedMessage{}
+
+	//create a map for a new sentiment
+	candidateMap := make(map[string]*score)
+
+	//populate the map so that all candidate are always listed in the json
+	candidateMap["berniesanders"] = &score{}
+	candidateMap["donaldtrump"] = &score{}
+	candidateMap["hillaryclinton"] = &score{}
+	candidateMap["johnkasich"] = &score{}
+	candidateMap["tedcruz"] = &score{}
+
+	//count for amount of messages managed
+	var messagesRead float64 = 0
+
+	//create a tick so that we know to send messages every two seconds
+	//this can be overridden if the array is too large
+	tick := time.Tick(time.Second * 2)
 
 	//Make a new Connection Hub instance
 	hub := &ConHub{
@@ -27,23 +86,88 @@ func main() {
 	//request to "/events/".
 	http.Handle("/events/", hub)
 
-	//create a new push object for us to push into
-	//we will get rid of this once we get everything together
-	newPush := pushMessage{}
-
 	//generate a fake function that sends the time to the user every second
 	//again we will get rid of this once we get storm working
 	go func() {
-		for i := 0; ; i++ {
+		for {
+			select {
 
-			//create the message to send to the user
-			newPush.main = fmt.Sprintf("%d - the time is %v", i, time.Now())
+			//if there is a message
+			case msg := <-partitionConsumer.Messages():
+				{
 
-			//send the message
-			hub.broadcast <- newPush
+					//put the json values into the struct
+					json.Unmarshal(msg.Value, &newSentiment)
 
-			//wait a second
-			time.Sleep(time.Second)
+					//if the message is for no one
+					if newSentiment.Candidate == "none" {
+						break
+					}
+
+					//find out if the message is positive or negative
+					positive := false
+					if newSentiment.Sentiment == "pos" {
+						positive = true
+					}
+
+					//if the tweet is positive
+					if positive {
+						candidateMap[newSentiment.Candidate].Positive++
+
+					} else {
+						candidateMap[newSentiment.Candidate].Negative++
+					}
+
+					messagesRead++
+				}
+
+			//send messages out every two seconds
+			case <-tick:
+				{
+					//if there are messages to to send the clients
+					if messagesRead != 0 {
+
+						//create a new map to send info to the client
+						//this is because we are using a map to pointer
+						//array to make things easier but this doesn't
+						//work for json.Marshal
+						fullArray := make(map[string]score)
+
+						//for each item in the pointer array
+						//move the items to the fullArray
+						for key, value := range candidateMap {
+
+							//divide the score by the total amount of tweets
+							//this lets us get the relative score of each
+							//person compared to each other
+							fullArray[key] = score{(*value).Positive / messagesRead,
+								(*value).Negative / messagesRead}
+						}
+
+						//parse the array into a byte json string
+						jsonByte, err := json.Marshal(fullArray)
+
+						if err != nil {
+							log.Panicln(err)
+						}
+
+						//send the message to the all the clients
+						hub.broadcast <- jsonByte
+
+						log.Println(messagesRead, "messages read")
+
+						//reset the message count
+						messagesRead = 0
+
+						//delete everything in the pointer map
+						//this should help keep things small
+						for key := range candidateMap {
+							candidateMap[key].Negative = 0
+							candidateMap[key].Positive = 0
+						}
+					}
+				}
+			}
 		}
 	}()
 
