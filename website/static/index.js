@@ -2,9 +2,9 @@
 var source = new EventSource('events/');
 // Create a callback for when a new message is received.
 source.onmessage = function(e) {
-    // Append the `data` attribute of the message to the DOM.
-    // document.body.innerHTML += e.data + '<br>';
-    console.log(e.data);
+  // Append the `data` attribute of the message to the DOM.
+  // document.body.innerHTML += e.data + '<br>';
+  console.log(e.data);
 };
 
 function random() {
@@ -12,7 +12,7 @@ function random() {
 }
 
 var n = 50,
-  duration = 750,
+  duration = 2000,
   now = new Date(Date.now() - duration);
 
 var margin = {top: 20, right: 20, bottom: 20, left: 40},
@@ -62,7 +62,7 @@ function graph(id, types) {
         .call(x.axis = d3.svg.axis().scale(x).orient("bottom"));
 
     var transition = d3.select({}).transition()
-        .duration(750)
+        .duration(duration)
         .ease("linear");
 
     tick();
