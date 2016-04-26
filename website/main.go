@@ -37,7 +37,7 @@ func main() {
 	}()
 
 	//create a new topic to listen
-	partitionConsumer, err := consumer.ConsumePartition("sentimentfeed", 0, sarama.OffsetOldest)
+	partitionConsumer, err := consumer.ConsumePartition("sentimentfeed", 0, sarama.OffsetNewest)
 
 	if err != nil {
 		panic(err)
@@ -54,6 +54,13 @@ func main() {
 
 	//create a map for a new sentiment
 	candidateMap := make(map[string]*score)
+
+	//populate the map so that all candidate are always listed in the json
+	candidateMap["berniesanders"] = &score{}
+	candidateMap["donaldtrump"] = &score{}
+	candidateMap["hillaryclinton"] = &score{}
+	candidateMap["johnkasich"] = &score{}
+	candidateMap["tedcruz"] = &score{}
 
 	//count for amount of messages managed
 	var messagesRead float64 = 0
@@ -88,6 +95,7 @@ func main() {
 			//if there is a message
 			case msg := <-partitionConsumer.Messages():
 				{
+
 					//put the json values into the struct
 					json.Unmarshal(msg.Value, &newSentiment)
 
@@ -100,13 +108,6 @@ func main() {
 					positive := false
 					if newSentiment.Sentiment == "pos" {
 						positive = true
-					}
-
-					//if the candidate is not already in the map
-					if _, ok := candidateMap[newSentiment.Candidate]; !ok {
-
-						//make a new score object
-						candidateMap[newSentiment.Candidate] = &score{}
 					}
 
 					//if the tweet is positive
@@ -161,7 +162,8 @@ func main() {
 						//delete everything in the pointer map
 						//this should help keep things small
 						for key := range candidateMap {
-							delete(candidateMap, key)
+							candidateMap[key].Negative = 0
+							candidateMap[key].Positive = 0
 						}
 					}
 				}
