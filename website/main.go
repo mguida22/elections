@@ -24,7 +24,7 @@ func main() {
 	//create a new consumer to look at the tweets
 	consumer, err := sarama.NewConsumer([]string{"localhost:9092"}, nil)
 
-	//if there is an error, end the progam
+	//if there is an error, end the program
 	if err != nil {
 		panic(err)
 	}
@@ -96,8 +96,8 @@ func main() {
 						break
 					}
 
+					//find out if the message is positive or negative
 					positive := false
-
 					if newSentiment.Sentiment == "pos" {
 						positive = true
 					}
@@ -105,10 +105,11 @@ func main() {
 					//if the candidate is not already in the map
 					if _, ok := candidateMap[newSentiment.Candidate]; !ok {
 
+						//make a new score object
 						candidateMap[newSentiment.Candidate] = &score{}
 					}
 
-					//if the tweet is postive
+					//if the tweet is positive
 					if positive {
 						candidateMap[newSentiment.Candidate].Positive++
 
@@ -122,38 +123,47 @@ func main() {
 			//send messages out every two seconds
 			case <-tick:
 				{
+					//if there are messages to to send the clients
 					if messagesRead != 0 {
 
-						//logic to send message to client goes here
-						//
+						//create a new map to send info to the client
+						//this is because we are using a map to pointer
+						//array to make things easier but this doesn't
+						//work for json.Marshal
 						fullArray := make(map[string]score)
 
+						//for each item in the pointer array
+						//move the items to the fullArray
 						for key, value := range candidateMap {
 
+							//divide the score by the total amount of tweets
+							//this lets us get the relative score of each
+							//person compared to each other
 							fullArray[key] = score{(*value).Positive / messagesRead,
 								(*value).Negative / messagesRead}
 						}
 
+						//parse the array into a byte json string
 						jsonString, err := json.Marshal(fullArray)
 
 						if err != nil {
 							log.Panicln(err)
 						}
 
+						//send the message to the all the clients
 						hub.broadcast <- pushMessage{jsonString}
-						//
-						//end logic
 
 						log.Println(messagesRead, "messages read")
+
+						//reset the message count
 						messagesRead = 0
 
+						//delete everything in the pointer map
+						//this should help keep things small
 						for key := range candidateMap {
-
 							delete(candidateMap, key)
 						}
 					}
-
-					tick = time.Tick(time.Second * 2)
 				}
 			}
 		}
