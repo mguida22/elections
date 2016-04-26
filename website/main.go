@@ -144,14 +144,14 @@ func main() {
 						}
 
 						//parse the array into a byte json string
-						jsonString, err := json.Marshal(fullArray)
+						jsonByte, err := json.Marshal(fullArray)
 
 						if err != nil {
 							log.Panicln(err)
 						}
 
 						//send the message to the all the clients
-						hub.broadcast <- pushMessage{jsonString}
+						hub.broadcast <- jsonByte
 
 						log.Println(messagesRead, "messages read")
 
