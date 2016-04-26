@@ -111,3 +111,13 @@ neg
 ```
 
 You can also use the `Analyzer` class provided for use within another program. See the `cli.py` file for an example.
+
+## Running a python cron job
+
+Run crontab -e and insert the following snippet inside the file.
+
+```*/2 * * * * /absolute_file_path/generate_wordcloud.py```
+
+This runs every 2 minutes. PS: Change the absolute paths inside generate_wordcloud.py
+
+A useful link: http://www.thesitewizard.com/general/set-cron-job.shtml
