@@ -2,3 +2,6 @@ pymongo
 tweepy
 pykafka
 python-dotenv
+wordcloud
+Pillow
+numpy
