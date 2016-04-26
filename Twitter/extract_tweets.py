@@ -20,15 +20,15 @@ class TweetExtractor(tweepy.StreamListener):
         # data['created_at'] = str(status.created_at)
         # data['geo'] = status.geo
         candidate = self.identify_candidate_from_tweet(status.text)
+        data["candidate"] = candidate
 
-        data['candidate'] = candidate
-        # print(status.text)
+        if candidate != None:
 
-        # converting dictionary back to json format
-        json_tweet_format = json.dumps(data)
+            # converting dictionary back to json format
+            json_tweet_format = json.dumps(data)
 
-        # writing to Kafka Queue
-        self.producer.produce(bytes(json_tweet_format, 'utf-8'))
+            # writing to Kafka Queue
+            self.producer.produce(bytes(json_tweet_format, 'utf-8'))
 
     def identify_candidate_from_tweet(self, tweet):
 
@@ -45,14 +45,15 @@ class TweetExtractor(tweepy.StreamListener):
         if tweet_words.find("john") > 0 or tweet_words.find("kasich") > 0:
             return "johnkasich"
 
-        return "none"
+        return None
 
     def save_tweets_to_db(self, data):
         self.Tweets.tweets.insert(data)
 
     # handle errors without closing stream:
     def on_error(self, status_code):
-        print('Encountered error with status code: {0}'.format(status_code), file=sys.stderr)
+        print('Encountered error with status code: {0}'.format(
+            status_code), file=sys.stderr)
         return True
 
     def on_timeout(self):

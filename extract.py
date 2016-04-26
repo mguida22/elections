@@ -23,7 +23,8 @@ The storm topology is run and the spout reads off the tweets from the kafka queu
 '''
 client = KafkaClient(hosts='127.0.0.1:9092')
 tweet_topic = client.topics[bytes('twitterfeed', 'utf-8')]
-tweet_producer = tweet_topic.get_producer(delivery_reports=False)
+tweet_producer = tweet_topic.get_producer(delivery_reports=False,
+                                          linger_ms=500)
 
 try:
     sapi = tweepy.streaming.Stream(auth, TweetExtractor(api, tweet_producer))
