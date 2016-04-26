@@ -15,8 +15,8 @@ type feedMessage struct {
 }
 
 type score struct {
-	Positive int
-	Negative int
+	Positive float64
+	Negative float64
 }
 
 func main() {
@@ -56,7 +56,7 @@ func main() {
 	candidateMap := make(map[string]*score)
 
 	//count for amount of messages managed
-	messagesRead := 0
+	var messagesRead float64 = 0
 
 	//create a tick so that we know to send messages every two seconds
 	//this can be overridden if the array is too large
@@ -117,13 +117,6 @@ func main() {
 					}
 
 					messagesRead++
-
-					//if there are more than 100 messages, go ahead and send it
-					if messagesRead > 100 {
-
-						//send the array to the client now
-						tick = time.Tick(time.Nanosecond)
-					}
 				}
 
 			//send messages out every two seconds
@@ -137,7 +130,8 @@ func main() {
 
 						for key, value := range candidateMap {
 
-							fullArray[key] = *value
+							fullArray[key] = score{(*value).Positive / messagesRead,
+								(*value).Negative / messagesRead}
 						}
 
 						jsonString, err := json.Marshal(fullArray)
