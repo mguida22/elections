@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <title>Elections</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="static/normalize.css">
   <link rel="stylesheet" href="static/skeleton.css">
   <link rel="stylesheet" href="static/style.css">
@@ -13,7 +13,11 @@
   <script src="//d3js.org/d3.v3.min.js"></script>
 
   <div class="container">
-    <h1>2016 Presidential Candidates</h1>
+    <h1>Tweet for <span class="next_line">President</span></h1>
+    <h2>A Real Time Sentiment Analysis of the 2016 Presidential Candidates
+On Twitter</h2>
+    <h3><span class="key_start">Key:</span><span class="positive">Positive Tweets / Total Tweets</span> - <span class="negative">(Negative Tweets / Total Tweets) x -1</span>
+    <span class="key_end">where total tweets = sum of tweets about Clinton, Trump, Sanders, and Cruz</span></h3>
 
     <div class="row">
       <div class="six columns">
@@ -42,6 +46,15 @@
         <div id="cruz-graph"></div>
       </div>
     </div>
+    <footer>
+      A project by
+      <a href="https://github.com/mguida22">mguida22</a>,
+      <a href="https://github.com/719Ben">719ben</a>,
+      <a href="https://github.com/narain280493">narain280493</a>,
+      <a href="https://github.com/ramdasdiwakaran">ramdasdiwakaran</a>, &
+      <a href="https://github.com/ranga91091">ranga91091</a> at the
+      <a href="https://colorado.edu/cs">University of Colorado Boulder</a>.
+    </footer>
   </div>
 
   <!-- <div class="graph"></div> -->

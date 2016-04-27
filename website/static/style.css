@@ -1,9 +1,14 @@
 body {
+  font-family: 'Montserrat', sans-serif;
   text-align: center;
 }
 
 svg {
   font: 10px sans-serif;
+}
+
+.container {
+  margin-top: 30px;
 }
 
 .line-pos {
@@ -16,6 +21,10 @@ svg {
   fill: none;
   stroke: #ff0000;
   stroke-width: 1.5px;
+}
+
+.next_line {
+  display: block;
 }
 
 .axis path,
@@ -32,4 +41,49 @@ svg {
 
 .img-circle {
   border-radius: 50%;
+}
+.key_start {
+  display: block;
+}
+
+.positive {
+  color: green;
+}
+
+.negative {
+  color: red;
+}
+
+.key_end {
+  display: block;
+}
+
+h1, h2, h3 {
+  letter-spacing: 0;
+}
+
+h2 {
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+h3 {
+  font-size: 16px;
+}
+
+h4 {
+  text-align: left;
+  padding: 19px 0 0 135px;
+}
+
+footer {
+  margin: 30px 0 10px 0;
+}
+
+a {
+  color: #696969;
+}
+
+a:hover {
+  color: green;
 }
