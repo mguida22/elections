@@ -21,7 +21,6 @@ source.onmessage = function(e) {
   }
 };
 
-
 // how many datapoints to display on a graph
 var n = 50;
 // how long between updating the graph
@@ -48,7 +47,7 @@ var x = d3.time.scale()
 // y scaling
 // linear scale to follow data (0-100%)
 var y = d3.scale.linear()
-  .domain([-50, 50])
+  .domain([-80, 80])
   .range([height, 0]);
 
 // line computation
