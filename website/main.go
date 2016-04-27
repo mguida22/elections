@@ -148,7 +148,7 @@ func main() {
 							//person compared to each other
 							fullArray[key] = score{
 								((*value).Positive / messagesRead) * 100,
-								((*value).Negative / messagesRead) * 100}
+								((*value).Negative / messagesRead) * -100}
 						}
 
 						//parse the array into a byte json string
