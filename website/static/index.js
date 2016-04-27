@@ -10,14 +10,14 @@ source.onmessage = function(e) {
   // we don't need to handle updating irregularly
   d = JSON.parse(e.data);
   if (d) {
-    groups.sanders.pos.val = d.berniesanders.Positive * 100;
-    groups.sanders.neg.val = d.berniesanders.Negative * 100;
-    groups.trump.pos.val = d.donaldtrump.Positive * 100;
-    groups.trump.neg.val = d.donaldtrump.Negative * 100;
-    groups.clinton.pos.val = d.hillaryclinton.Positive * 100;
-    groups.clinton.neg.val = d.hillaryclinton.Negative * 100;
-    groups.cruz.pos.val = d.tedcruz.Positive * 100;
-    groups.cruz.neg.val = d.tedcruz.Negative * 100;
+    groups.sanders.pos.val = d.berniesanders.Positive;
+    groups.sanders.neg.val = d.berniesanders.Negative;
+    groups.trump.pos.val = d.donaldtrump.Positive;
+    groups.trump.neg.val = d.donaldtrump.Negative;
+    groups.clinton.pos.val = d.hillaryclinton.Positive;
+    groups.clinton.neg.val = d.hillaryclinton.Negative;
+    groups.cruz.pos.val = d.tedcruz.Positive;
+    groups.cruz.neg.val = d.tedcruz.Negative;
   }
 };
 
@@ -30,29 +30,38 @@ var duration = 2000;
 var now = new Date(Date.now() - duration);
 
 // set margins, width, height of the graphs
-var margin = { top: 20, right: 20, bottom: 20, left: 40 },
-    width = 400 - margin.left - margin.right,
-    height = 200 - margin.top - margin.bottom;
+var margin = {
+    top: 20,
+    right: 20,
+    bottom: 20,
+    left: 40
+  },
+  width = 400 - margin.left - margin.right,
+  height = 200 - margin.top - margin.bottom;
 
 // x scaling
 // time scale, moving along with the data
 var x = d3.time.scale()
-    .domain([now - (n - 2) * duration, now - duration])
-    .range([0, width]);
+  .domain([now - (n - 2) * duration, now - duration])
+  .range([0, width]);
 
 // y scaling
 // linear scale to follow data (0-100%)
 var y = d3.scale.linear()
-    .domain([0, 100])
-    .range([height, 0]);
+  .domain([0, 100])
+  .range([height, 0]);
 
 // line computation
 // interpolate between points to smooth data
 // slide data with time, leave datapoint fixed in y direction
 var line = d3.svg.line()
-    .interpolate("basis")
-    .x(function(d, i) { return x(now - (n - 1 - i) * duration); })
-    .y(function(d, i) { return y(d); });
+  .interpolate("basis")
+  .x(function(d, i) {
+    return x(now - (n - 1 - i) * duration);
+  })
+  .y(function(d, i) {
+    return y(d);
+  });
 
 // generate initial graphs for each given id
 function graph(id) {
@@ -60,24 +69,24 @@ function graph(id) {
   // set the width and height of our graph
   // center it in the div
   var svg = d3.select("#" + id + '-graph').append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
     .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   // x axis for each group
   groups[id].xAxis = svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(x.axis = d3.svg.axis().scale(x).orient("bottom"));
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(x.axis = d3.svg.axis().scale(x).orient("bottom"));
 
   // holder for each path per graph
   groups[id].paths = svg.append('g');
 
   // y axis for the graph
   var yAxis = svg.append("g")
-      .attr("class", "y axis")
-      .call(d3.svg.axis().scale(y).orient("left"));
+    .attr("class", "y axis")
+    .call(d3.svg.axis().scale(y).orient("left"));
 
   // for both positive and negative sentiment data
   // tell the path to get it's data from the proper group id
@@ -167,41 +176,57 @@ function tick() {
 var groups = {
   clinton: {
     pos: {
-      data: d3.range(n).map(function() { return 0; }),
+      data: d3.range(n).map(function() {
+        return 0;
+      }),
       val: 0,
     },
     neg: {
-      data: d3.range(n).map(function() { return 0; }),
+      data: d3.range(n).map(function() {
+        return 0;
+      }),
       val: 0,
     }
   },
   trump: {
     pos: {
-      data: d3.range(n).map(function() { return 0; }),
+      data: d3.range(n).map(function() {
+        return 0;
+      }),
       val: 0,
     },
     neg: {
-      data: d3.range(n).map(function() { return 0; }),
+      data: d3.range(n).map(function() {
+        return 0;
+      }),
       val: 0,
     }
   },
   sanders: {
     pos: {
-      data: d3.range(n).map(function() { return 0; }),
+      data: d3.range(n).map(function() {
+        return 0;
+      }),
       val: 0,
     },
     neg: {
-      data: d3.range(n).map(function() { return 0; }),
+      data: d3.range(n).map(function() {
+        return 0;
+      }),
       val: 0,
     }
   },
   cruz: {
     pos: {
-      data: d3.range(n).map(function() { return 0; }),
+      data: d3.range(n).map(function() {
+        return 0;
+      }),
       val: 0,
     },
     neg: {
-      data: d3.range(n).map(function() { return 0; }),
+      data: d3.range(n).map(function() {
+        return 0;
+      }),
       val: 0,
     }
   },
