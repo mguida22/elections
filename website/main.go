@@ -66,7 +66,7 @@ func main() {
 
 	//create a tick so that we know to send messages every two seconds
 	//this can be overridden if the array is too large
-	tick := time.Tick(time.Second * 2)
+	tick := time.Tick(time.Millisecond * 500)
 
 	//Make a new Connection Hub instance
 	hub := &ConHub{
@@ -88,6 +88,7 @@ func main() {
 	//generate a fake function that sends the time to the user every second
 	//again we will get rid of this once we get storm working
 	go func() {
+		log.Println("started go routine")
 		for {
 			select {
 
@@ -161,7 +162,7 @@ func main() {
 						//send the message to the all the clients
 						hub.broadcast <- jsonByte
 
-						log.Println(messagesRead, "messages read")
+						//log.Println(messagesRead, "messages read")
 
 						//reset the message count
 						messagesRead = 0

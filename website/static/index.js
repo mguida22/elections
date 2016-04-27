@@ -25,7 +25,7 @@ source.onmessage = function(e) {
 // how many datapoints to display on a graph
 var n = 50;
 // how long between updating the graph
-var duration = 2000;
+var duration = 500;
 // get the current time - duration
 var now = new Date(Date.now() - duration);
 

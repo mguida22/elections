@@ -8,7 +8,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -141,8 +140,8 @@ func (hub *ConHub) run() {
 						//send it
 						c.send <- msg
 					}
-					log.Printf("Sent message to %d connections\n",
-						len(hub.connections))
+					//log.Printf("Sent message to %d connections\n",
+					//	len(hub.connections))
 				}
 			}
 		}
