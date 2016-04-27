@@ -59,7 +59,6 @@ func main() {
 	candidateMap["berniesanders"] = &score{}
 	candidateMap["donaldtrump"] = &score{}
 	candidateMap["hillaryclinton"] = &score{}
-	candidateMap["johnkasich"] = &score{}
 	candidateMap["tedcruz"] = &score{}
 
 	//count for amount of messages managed
@@ -100,7 +99,7 @@ func main() {
 					json.Unmarshal(msg.Value, &newSentiment)
 
 					//if the message is for no one
-					if newSentiment.Candidate == "none" {
+					if newSentiment.Candidate == "none" || newSentiment.Candidate == "johnkasich" {
 						break
 					}
 
@@ -108,6 +107,13 @@ func main() {
 					positive := false
 					if newSentiment.Sentiment == "pos" {
 						positive = true
+					}
+
+					if _, ok := candidateMap[newSentiment.Candidate]; !ok {
+
+						//make a new score object
+						candidateMap[newSentiment.Candidate] = &score{}
+						log.Println("missing:", newSentiment.Candidate)
 					}
 
 					//if the tweet is positive
@@ -140,8 +146,9 @@ func main() {
 							//divide the score by the total amount of tweets
 							//this lets us get the relative score of each
 							//person compared to each other
-							fullArray[key] = score{(*value).Positive / messagesRead,
-								(*value).Negative / messagesRead}
+							fullArray[key] = score{
+								((*value).Positive / messagesRead) * 100,
+								((*value).Negative / messagesRead) * 100}
 						}
 
 						//parse the array into a byte json string
