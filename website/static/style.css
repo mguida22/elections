@@ -3,6 +3,14 @@ body {
   text-align: center;
 }
 
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
+
 svg {
   font: 10px sans-serif;
 }
