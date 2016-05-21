@@ -59,7 +59,6 @@ func main() {
 	candidateMap["berniesanders"] = &score{}
 	candidateMap["donaldtrump"] = &score{}
 	candidateMap["hillaryclinton"] = &score{}
-	candidateMap["tedcruz"] = &score{}
 
 	//count for amount of messages managed
 	var messagesRead float64 = 0

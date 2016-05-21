@@ -16,8 +16,6 @@ source.onmessage = function(e) {
     groups.trump.neg.val = d.donaldtrump.Negative;
     groups.clinton.pos.val = d.hillaryclinton.Positive;
     groups.clinton.neg.val = d.hillaryclinton.Negative;
-    groups.cruz.pos.val = d.tedcruz.Positive;
-    groups.cruz.neg.val = d.tedcruz.Negative;
   }
 };
 
@@ -202,20 +200,6 @@ var groups = {
     }
   },
   sanders: {
-    pos: {
-      data: d3.range(n).map(function() {
-        return 0;
-      }),
-      val: 0,
-    },
-    neg: {
-      data: d3.range(n).map(function() {
-        return 0;
-      }),
-      val: 0,
-    }
-  },
-  cruz: {
     pos: {
       data: d3.range(n).map(function() {
         return 0;

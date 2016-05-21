@@ -40,10 +40,6 @@ class TweetExtractor(tweepy.StreamListener):
             return "hillaryclinton"
         if tweet_words.find("donald") > 0 or tweet_words.find("trump") > 0:
             return "donaldtrump"
-        if tweet_words.find("ted") > 0 or tweet_words.find("cruz") > 0:
-            return "tedcruz"
-        if tweet_words.find("john") > 0 or tweet_words.find("kasich") > 0:
-            return "johnkasich"
 
         return None
 
