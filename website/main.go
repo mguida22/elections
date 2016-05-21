@@ -99,7 +99,7 @@ func main() {
 					json.Unmarshal(msg.Value, &newSentiment)
 
 					//if the message is for no one
-					if newSentiment.Candidate == "none" || newSentiment.Candidate == "johnkasich" {
+					if newSentiment.Candidate == "none" {
 						break
 					}
 
