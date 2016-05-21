@@ -28,11 +28,11 @@ tweet_producer = tweet_topic.get_producer(delivery_reports=False,
 
 try:
     sapi = tweepy.streaming.Stream(auth, TweetExtractor(api, tweet_producer))
-    sapi.filter(track=['donaldtrump', 'donald trump', 'tedcruz', 'ted cruz',
-                       'berniesanders',
-                       'bernie sanders', 'hillaryclintion', 'hillary clintion',
-                       'johnkasich', 'john kasich'])
+    sapi.filter(track=['donaldtrump', 'donald trump', 'berniesanders',
+                       'bernie sanders', 'hillaryclintion', 'hillary clintion'])
 except IncompleteRead:
     pass
 except AttributeError:
+    # Tweepy has doens't handle this on their own.
+    # https://github.com/tweepy/tweepy/issues/576
     pass
