@@ -34,3 +34,5 @@ try:
                        'johnkasich', 'john kasich'])
 except IncompleteRead:
     pass
+except AttributeError:
+    pass
