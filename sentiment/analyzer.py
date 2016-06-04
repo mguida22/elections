@@ -2,14 +2,14 @@
 
 import os
 
-from .utils import load_classifier
+from .utils import load_classifier, word_feats
 
 
 class Analyzer:
 
-    def __init__(self, classifier='default_classifier'):
-        self.classifier, self.feats = load_classifier(classifier)
+    def __init__(self, classifier='default_classifier.pickle'):
+        self.classifier = load_classifier(classifier)
 
     def classify(self, s):
-        tokenized = self.feats(s)
+        tokenized = word_feats(s)
         return self.classifier.classify(tokenized)

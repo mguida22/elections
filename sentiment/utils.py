@@ -1,6 +1,5 @@
 import pickle
 import os.path
-import json
 import re
 
 
@@ -19,48 +18,26 @@ STOPWORDS = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you',
              'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now']
 
 
-def save_classifier(name, classifier, feats_name):
+def save_classifier(classifier):
     '''
-    save the given classifier by name
+    save the given classifier
     '''
-    if os.path.isfile('config.json') is True:
-        with open('config.json', 'r') as f:
-            try:
-                config = json.load(f)
-            except:
-                config = {}
-    else:
-        config = {}
 
-    config[name] = {}
-    config[name]['classifier_path'] = name + '.pickle'
-    config[name]['feats_name'] = feats_name
-
-    with open('config.json', 'w') as f:
-        print(json.dumps(config, indent=4), file=f)
-
-    name = name + '.pickle'
+    name = 'default_classifier.pickle'
     with open(name, 'wb') as f:
         pickle.dump(classifier, f)
         print('Saved classifier to {0}'.format(name))
 
 
-def load_classifier(name):
+def load_classifier(path):
     '''
     load the classifier by file path
     '''
-    if os.path.isfile('sentiment/config.json') is True:
-        with open('sentiment/config.json', 'r') as f:
-            try:
-                config = json.load(f)
-            except:
-                print('Check sentiment/config.json')
-                raise
-    else:
-        raise FileNotFoundError('sentiment/config.json')
+    if os.path.isfile(path) is False:
+        raise FileNotFoundError(path)
 
-    with open('sentiment/' + config[name]['classifier_path'], 'rb') as f:
-        return (pickle.load(f), feats[config[name]['feats_name']])
+    with open(path, 'rb') as f:
+        return pickle.load(f)
 
 
 def word_feats(words):
@@ -79,7 +56,3 @@ def word_feats(words):
                 d[word] = False
 
     return d
-
-feats = {
-    'word_feats': word_feats
-}
