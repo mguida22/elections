@@ -13,7 +13,7 @@ sentiment_producer = sentiment_topic.get_producer(delivery_reports=False,
 
 tweet_consumer = tweet_topic.get_simple_consumer()
 
-analyzer = Analyzer()
+analyzer = Analyzer('sentiment/default_classifier.pickle')
 
 
 for message in tweet_consumer:

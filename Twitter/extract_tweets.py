@@ -10,7 +10,6 @@ class TweetExtractor(tweepy.StreamListener):
     def __init__(self, api, producer):
         self.api = api
         super(tweepy.StreamListener, self).__init__()
-        # self.Tweets = pymongo.MongoClient().tweets
         self.producer = producer
 
     def on_status(self, status):
@@ -42,9 +41,6 @@ class TweetExtractor(tweepy.StreamListener):
             return "donaldtrump"
 
         return None
-
-    def save_tweets_to_db(self, data):
-        self.Tweets.tweets.insert(data)
 
     # handle errors without closing stream:
     def on_error(self, status_code):
