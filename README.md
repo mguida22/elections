@@ -1,123 +1,47 @@
-# Elections
+# Tweet for President
 
-Using twitter data to predict primary election results.
+A real time sentiment analysis of the 2016 Presidential Candidates on Twitter.
 
-## Gathering Data
+By pulling in tweets and analyzing them we can get an idea of how people are feeling, in real time, about a candidate. This analysis gives an interesting look into how people on Twitter are reacting to current events and news stories pertaining to the election.
 
-### Setting up MongoDB ( AWS - Ubuntu)
+This project consists of four main parts:
+ - [streaming of tweets from Twitter](https://github.com/CUBigDataClass/Elections#streaming)
+ - [sentiment analysis of tweets](https://github.com/CUBigDataClass/Elections#sentiment)
+ - [web server to format data and handle connections](https://github.com/CUBigDataClass/Elections#server)
+ - [web site to display streams of data](https://github.com/CUBigDataClass/Elections#web)
 
-Follow the steps to setup MongoDB on an Ubuntu machine.
+## Streaming
 
-```
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
-echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
-sudo apt-get update
-sudo apt-get install -y mongodb-org
-```
+We stream tweets in real time using [Twitter's API](https://dev.twitter.com/streaming/public) and [tweepy](https://github.com/tweepy/tweepy). These tweets are filtered on terms related to the candidates, and formatted with the candidate name and tweet status. The data is then passed off to a Kafka queue, which handles all of the communication between different pieces of the project.
 
-On a Mac:
-```
-brew update
-brew install mongodb
-```
+## Sentiment
 
-#### Starting MongoDB:
+After being filtered, an analyzer reads off of the Kafka queue and tags the tweet `pos` or `neg`, before passing it back into a different Kafka queue.
 
-`sudo service mongod start`
+The analyzer is built on top of [nltk's naive bayes](http://www.nltk.org/book/ch06.html) classifier. It's trained on a dataset of 800,000 tweets that have been tagged `pos` or `neg` and uses this data as the source of truth. We experimented with more complex classifiers, however naive bayes was a good fit for this project, balancing accuracy and speed.
 
-#### Stopping MongoDB:
+A classifier can be trained using the `trainer.py` script, which may take a few minutes to complete (you will need the dataset). After a classifier is generated, it can be used by an analyzer to tag tweets. The default classifier should be placed at `sentiment/default_classifier.pickle`, however you can configure the analyzer to use any classifier if you wish.
 
-`sudo service mongod stop`
+> note: classifiers are generally very large and any program using one will need some time to load it into memory.
 
-### Installing tweepy and pymongo
-```
-pip install tweepy
-pip install pymongo
-```
-### Setting the environment variables
+To test a classifier manually on tweets or phrases, use the `cli.py` script provided. You can feed it phrases and it will classify them, which is helpful to debug your classifier. An example may look as follows:
 
-In the ~/.bashrc file (ubuntu) or ~/.bash_profile file (mac), enter the following:
-```
-export TWITTER_CONSUMER_KEY='your key'
-export TWITTER_CONSUMER_KEY_SECRET_0='your key'
-export TWITTER_ACCESS_TOKEN_KEY='your key'
-export TWITTER_ACCESS_TOKEN_KEY_SECRET_0='your key'
-export PYTHONPATH="Location of your folder (in this case the location of the folder 'Elections' ":$PYTHONPATH
-```
-then either load a new prompt or run
-
-`source ~/.bashrc`
-or
-`source ~/.bash_profile`
-
-### Tmux
-
-A tmux session named collect_twitter_data has been created. It will be running in the background forever until terminated explicitly. Currently extract-tweets.py is running on the AWS instance and it is collecting data. To view what's happening you should 'attach' to that session. Basically, ssh to our instance from the terminal and run the command:
-
-`tmux attach -t collect_twitter_data`
-
-Then you can use it as an usual ubuntu terminal.
-
-For more info on tmux - https://robots.thoughtbot.com/a-tmux-crash-course
-
-## Real-time analytics using streamparse
-
-[Streamparse](https://github.com/Parsely/streamparse) lets you run Python code against real-time streams of data via Apache Storm. With streamparse you can create Storm bolts and spouts in Python without having to write a single line of Java. It also provides handy CLI utilities for managing Storm clusters and projects.
-
-### Quickstart with streamparse
-With no need for any coding in Java, streamparse lets you [get started](http://streamparse.readthedocs.org/en/stable/quickstart.html) right away with a basic wordcount topology.
-
-**Important:** The version of `lein` installed should be `2.x`. If not, upgrade it by following [this](https://github.com/technomancy/leiningen/wiki/Upgrading).
-
-## Sentiment Analysis
-
-For sentiment analysis we are using a Naive Bayes classifier from ntlk. The training data currently used is a set of 800,000 tagged tweets.
-
-All examples are from within the `sentiment` directory.
-
-### Training a classifier
-
-Trim and keep all 800,000 tweets
-```
-$ python3 trim.py
-```
-
-Trim to 10,000 tweets (faster for testing, use any number up to 800,000)
-```
-$ python3 trim.py training_set.csv 10000
-```
-
-Train the classifier (need the trimmed.csv file from above)
-```
-$ python3 trainer.py
-```
-
-Train the classifier, with 10 iterations over each set (no accuracy improvement, but gives you a better basis for comparison if there are more trials)
-```
-$ python3 trainer.py 10
-```
-
-### Using a classifier
-
-The most accurate classifier from training will be saved at the end and that classifier is loaded here. Edit your config.json to use a different classifier.
-
-To test using the interactive cli
 ```
 $ python3 cli.py
-? this is awesome!
+? i love this
 pos
-? this sucks
+? i hate this
 neg
 ```
 
-You can also use the `Analyzer` class provided for use within another program. See the `cli.py` file for an example.
+## Server
 
-## Running a python cron job
+The webserver is built to handle multiple connections and stream data to any connections listening. It reads off of the Kafka sentiment queue, does some simple formatting and calculations and sends data to the clients. This messaging to the clients takes advantage of [server sent events](https://www.wikiwand.com/en/Server-sent_events) and broadcasts a message out every 500ms, giving it a streaming nature.
 
-Run crontab -e and insert the following snippet inside the file.
+## Web
 
-```*/2 * * * * /absolute_file_path/generate_wordcloud.py```
+The web site takes in data from the server using [EventSource](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) and queues it to display in a streaming graph. The graphs are powered by [D3](https://d3js.org/) and display a % positive and % negative for each candidate. The graphs maintain their own sense of 'time' and transition data on and off of the graph. This approach helps buffer inconsistencies in data from the server, and a line is drawn through the data by interpolating the space in between points. Putting all of these pieces together we get a smooth flow on our graphs.
 
-This runs every 2 minutes. PS: Change the absolute paths inside generate_wordcloud.py
+## License
 
-A useful link: http://www.thesitewizard.com/general/set-cron-job.shtml
+MIT
