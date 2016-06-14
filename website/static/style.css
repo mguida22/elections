@@ -67,6 +67,13 @@ svg {
   font-size: 12px;
 }
 
+.github-logo {
+  display: block;
+  margin: auto;
+  height: 40px;
+  width: 40px;
+}
+
 h1, h2, h3 {
   letter-spacing: 0;
 }
