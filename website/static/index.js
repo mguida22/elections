@@ -10,8 +10,6 @@ source.onmessage = function(e) {
   // we don't need to handle updating irregularly
   d = JSON.parse(e.data);
   if (d) {
-    groups.sanders.pos.val = d.berniesanders.Positive;
-    groups.sanders.neg.val = d.berniesanders.Negative;
     groups.trump.pos.val = d.donaldtrump.Positive;
     groups.trump.neg.val = d.donaldtrump.Negative;
     groups.clinton.pos.val = d.hillaryclinton.Positive;
@@ -186,20 +184,6 @@ var groups = {
     }
   },
   trump: {
-    pos: {
-      data: d3.range(n).map(function() {
-        return 0;
-      }),
-      val: 0,
-    },
-    neg: {
-      data: d3.range(n).map(function() {
-        return 0;
-      }),
-      val: 0,
-    }
-  },
-  sanders: {
     pos: {
       data: d3.range(n).map(function() {
         return 0;

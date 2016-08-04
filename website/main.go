@@ -56,7 +56,6 @@ func main() {
 	candidateMap := make(map[string]*score)
 
 	//populate the map so that all candidate are always listed in the json
-	candidateMap["berniesanders"] = &score{}
 	candidateMap["donaldtrump"] = &score{}
 	candidateMap["hillaryclinton"] = &score{}
 

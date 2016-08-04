@@ -28,9 +28,10 @@ tweet_producer = tweet_topic.get_producer(delivery_reports=False,
 
 while True:
     try:
-        sapi = tweepy.streaming.Stream(auth, TweetExtractor(api, tweet_producer))
-        sapi.filter(track=['donaldtrump', 'donald trump', 'berniesanders',
-                           'bernie sanders', 'hillaryclintion', 'hillary clintion'])
+        sapi = tweepy.streaming.Stream(
+            auth, TweetExtractor(api, tweet_producer))
+        sapi.filter(track=['donaldtrump', 'donald trump',
+                           'hillaryclintion', 'hillary clintion'])
     except IncompleteRead:
         pass
     except AttributeError:
