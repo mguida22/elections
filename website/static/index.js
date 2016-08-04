@@ -43,7 +43,7 @@ var x = d3.time.scale()
 // y scaling
 // linear scale to follow data (0-100%)
 var y = d3.scale.linear()
-  .domain([-80, 80])
+  .domain([-100, 100])
   .range([height, 0]);
 
 // line computation
