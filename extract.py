@@ -5,6 +5,7 @@ from pykafka import KafkaClient
 import tweepy
 from http.client import IncompleteRead
 import json
+from datetime import datetime
 
 
 CONSUMER_KEY = config.get_environment_variable('TWITTER_CONSUMER_KEY')
@@ -37,6 +38,11 @@ while True:
     except AttributeError:
         # Tweepy has doens't handle this on their own.
         # https://github.com/tweepy/tweepy/issues/576
-        print('AttributeError: Retrying the streaming connection.')
+        print('[{0}] AttributeError: Retrying the streaming connection.'.format(str(datetime.now())))
+        continue
+    except TypeError:
+        # Tweepy also doesn't handle this...
+        # https://github.com/tweepy/tweepy/issues/674
+        print('[{0}] TypeError: Retrying the streaming connection.'.format(str(datetime.now())))
         continue
     break
