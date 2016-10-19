@@ -42,6 +42,54 @@ The webserver is built to handle multiple connections and stream data to any con
 
 The web site takes in data from the server using [EventSource](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) and queues it to display in a streaming graph. The graphs are powered by [D3](https://d3js.org/) and display a % positive and % negative for each candidate. The graphs maintain their own sense of 'time' and transition data on and off of the graph. This approach helps buffer inconsistencies in data from the server, and a line is drawn through the data by interpolating the space in between points. Putting all of these pieces together we get a smooth flow on our graphs.
 
+## Running Locally
+
+### Installation and Setup
+
+Clone this repository locally
+```
+$ git clone <repo>
+$ cd Elections
+```
+
+Install dependencies
+```
+# activate virtualenv
+$ pip install -r requirements.txt
+```
+
+Install Kafka ([directions here](https://kafka.apache.org/quickstart#quickstart_download))
+
+Create a `.env` file at `Config_Utils/.env` with your twitter access credentials ([see here for getting access](https://dev.twitter.com/oauth/overview)). It must follow the form below
+```
+TWITTER_CONSUMER_KEY="<key>"
+TWITTER_CONSUMER_SECRET="<secret>"
+TWITTER_ACCESS_TOKEN_KEY="<key>"
+TWITTER_ACCESS_TOKEN_SECRET="<secret>"
+```
+
+Download the [trained classifier](https://www.dropbox.com/s/0j472jfhw3crvsf/default_classifier.pickle?dl=0) into `sentiment/default_classifier.pickle`
+> You can also use your own dataset, using `trainer.py`, however the script is fairly specific to the dataset we used. It would be a nice improvement to have this generalized and/or better documented
+
+### Running
+
+This project has many moving parts. You'll need to have them all running together, we use tmux for this, but pick your favorite option.
+
+First you'll need to start up Kafka, refer to their [documentation](https://kafka.apache.org/quickstart#quickstart_startserver) for instructions.
+
+Next you'll need to start the pipeline. Tweets flow from extract.py --> analyze.py --> go server
+
+```
+$ python3 extract.py
+# in new tmux session or terminal tab/window
+$ python3 analyze.py
+# in new tmux session or terminal tab/window
+$ cd website/
+$ go run main.go conn_manager.go
+```
+
+Visit localhost:9092 in your browser
+
 ## License
 
 MIT
