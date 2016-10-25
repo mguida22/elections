@@ -47,15 +47,16 @@ The web site takes in data from the server using [EventSource](https://developer
 ### Installation and Setup
 
 Clone this repository locally
-```
+```sh
 $ git clone <repo>
 $ cd Elections
 ```
 
 Install dependencies
-```
+```sh
 # activate virtualenv
 $ pip install -r requirements.txt
+$ go get github.com/Shopify/sarama
 ```
 
 Install Kafka ([directions here](https://kafka.apache.org/quickstart#quickstart_download))
@@ -79,7 +80,7 @@ First you'll need to start up Kafka, refer to their [documentation](https://kafk
 
 Next you'll need to start the pipeline. Tweets flow from extract.py --> analyze.py --> go server
 
-```
+```sh
 $ python3 extract.py
 # in new tmux session or terminal tab/window
 $ python3 analyze.py
